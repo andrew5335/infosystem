@@ -4,6 +4,10 @@
 # project file
 .project
 
+# svn related
+.svn
+
+
 # Log file
 *.log
 
