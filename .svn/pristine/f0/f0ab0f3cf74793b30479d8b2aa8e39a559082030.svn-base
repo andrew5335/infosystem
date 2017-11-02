@@ -1,0 +1,41 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>    
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<table cellpadding="0" cellspacing="0" width="600" style="border-color:rgb(666);border:1px;border-style:solid;">
+	<tr>
+		<th height="25" style="border-color:rgb(666);border:1px;border-style:solid;font-size:12px">제목</th>
+		<th height="25" style="border-color:rgb(666);border:1px;border-style:solid;font-size:12px">작성자</th>
+		<th height="25" style="border-color:rgb(666);border:1px;border-style:solid;font-size:12px">조회수</th>
+		<th height="25" style="border-color:rgb(666);border:1px;border-style:solid;font-size:12px">작성일</th>
+	</tr>
+	<%
+		List<Map> list = (List)request.getAttribute("result");
+		for(Map item : list) {
+	%>
+		<tr>
+			<td height="22" align="center" style="border-color:rgb(666);border:1px;border-style:solid;"><font style="font-size:12px"><a href="/sample/view.info?method=view&idx=<%=item.get("IDX") %>"><%=item.get("TITLE") %></a></font></td>
+			<td height="22" align="center" style="border-color:rgb(666);border:1px;border-style:solid;"><font style="font-size:12px"><%=item.get("WRITE_NAME") %></font></td>
+			<td height="22" align="center" style="border-color:rgb(666);border:1px;border-style:solid;"><font style="font-size:12px"><%=item.get("HIT_CNT") %></font></td>
+			<td height="22" align="center" style="border-color:rgb(666);border:1px;border-style:solid;"><font style="font-size:12px"><%=item.get("REG_DATE") %></font></td>
+		</tr>			
+	<%
+		}
+	%>
+</table>
+<table cellpadding="0" cellspacing="0" border="0" width="600">
+	<tr>
+		<td height="5"></td>
+	</tr>
+	<tr>
+		<td align="right" style="font-size:12px"><a href="/sample/write.info">글쓰기</a></td>
+	</tr>
+</table>
+</body>
+</html>

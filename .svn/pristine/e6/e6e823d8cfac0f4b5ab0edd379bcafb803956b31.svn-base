@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<taglib xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:shemaLocation="http://java.sun.com/xml/ns/j2ee http://web-jsptaglibrary_2_0.xsd"
+	version="2.0">
+
+	<description>EL에서 함수실행</description>
+	<tlib-version>1.0</tlib-version>
+	<short-name>ELfunctions</short-name>
+	<uri>/util</uri>
+	
+	<function>
+		<description>convertCapacity</description>
+		<name>convertCapacity</name>
+		<function-class>kr.co.kyowon.mypad2.log.util.CommonUtil</function-class>
+		<function-signature>String convertCapacity(long)</function-signature>
+		<example>${util:convertCapacity(12345678)}</example>
+	</function>
+	
+	
+	<function>
+		<description>pagingHtml</description>
+		<name>pagingHtml</name>
+		<function-class>kr.co.kyowon.mypad2.log.util.PagingUtil</function-class>
+		<function-signature>String pagingHtml(javax.servlet.http.HttpServletRequest,java.lang.String)</function-signature>
+		<example>${util:pagingHtml(request,'form')}</example>		
+	</function>
+	
+	
+	<function>
+		<description>convertHtmlEscape</description>
+		<name>convertHtmlEscape</name>
+		<function-class>kr.co.kyowon.mypad2.log.util.CommonUtil</function-class>
+		<function-signature>String convertHtmlEscape(java.lang.String,int)</function-signature>
+		<example>${util:convertHtmlEscape('str',10)}</example>		
+	</function>
+	
+	
+	<function>
+		<description>ageOptionHtml</description>
+		<name>ageOptionHtml</name>
+		<function-class>kr.co.kyowon.mypad2.log.util.CommonUtil</function-class>
+		<function-signature>String ageOptionHtml(int)</function-signature>
+		<example>${util:ageOptionHtml(0)}</example>		
+	</function>
+	
+	
+	<function>
+		<description>convertTime</description>
+		<name>convertTime</name>
+		<function-class>kr.co.kyowon.mypad2.log.util.CommonUtil</function-class>
+		<function-signature>String convertTime(int)</function-signature>
+		<example>${util:convertTime(200)}</example>		
+	</function>
+	
+	<function>
+		<description>getYesterDayStr</description>
+		<name>getYesterDayStr</name>
+		<function-class>kr.co.kyowon.mypad2.log.util.CommonUtil</function-class>
+		<function-signature>String getYesterDayStr()</function-signature>
+		<example>${util:getYesterDayStr()}</example>		
+	</function>
+	
+	<function>
+		<description>getLastMonthStr</description>
+		<name>getLastMonthStr</name>
+		<function-class>kr.co.kyowon.mypad2.log.util.CommonUtil</function-class>
+		<function-signature>String getLastMonthStr()</function-signature>
+		<example>${util:getLastMonthStr()}</example>		
+	</function>
+</taglib>
+

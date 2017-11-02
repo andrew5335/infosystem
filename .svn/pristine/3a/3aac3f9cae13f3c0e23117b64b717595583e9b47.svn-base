@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org/DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!--  -->
+<sqlMap namespace="Exam">
+
+    <select id="getExamResult" resultClass="java.util.HashMap" parameterClass="java.lang.Integer">
+        SELECT
+            A.IDX
+            , A.COMPANYIDX
+            , A.INFOIDX
+            , A.EMPLOYEENAME
+            , A.ADDRESS
+            , A.PAGECNT
+            , A.REPORT
+            , A.REPORTNO
+            , A.RESULT
+            , A.SAMPLECNT
+            , A.TESTDATE
+            , A.TESTDATE2
+            , A.TESTPARAMETER
+            , B.COMPANYNAME
+        FROM
+            EXAMRESULT A
+        JOIN
+            COMPANY B
+        ON
+            A.COMPANYIDX = B.IDX
+        WHERE
+            A.COMPANYIDX = #infoIdx#
+        ORDER BY
+            A.IDX DESC, A.REPORTNO DESC
+    </select>
+    
+    <insert id="insertExamResult" parameterClass="java.util.HashMap">
+        INSERT INTO EXAMRESULT
+            (
+                COMPANYIDX
+                , INFOIDX
+                , EMPLOYEENAME
+                , ADDRESS
+                , PAGECNT
+                , REPORT
+                , REPORTNO
+                , RESULT
+                , SAMPLECNT
+                , TESTDATE
+                , TESTDATE2
+                , TESTPARAMETER
+            )
+            VALUES
+            (
+                #companyIdx#
+                , #infoIdx#
+                , #employeeName#
+                , #address#
+                , #pageCnt#
+                , #report#
+                , #reportNo#
+                , #result#
+                , #sampleCnt#
+                , #testDate#
+                , #testDate2#
+                , #testParameter#
+            )
+    </insert>
+    
+    <update id="updateExamResult" parameterClass="java.util.HashMap">
+        UPDATE
+            EXAMRESULT
+        SET
+            PAGECNT = #pageCnt#
+            , REPORT = #report#
+            , REPORTNO = #reportNo#
+            , RESULT = #result#
+            , SAMPLECNT = #sampleCnt#
+            , TESTDATE = #testDate#
+            , TESTDATE2 = #testDate2#
+            , TESTPARAMETER = #testParameter#
+        WHERE
+            INFOIDX = #updateIdx#
+    </update>
+    
+    <delete id="deleteExamResult" parameterClass="java.lang.Integer">
+        DELETE FROM
+            EXAMRESULT
+        WHERE
+            IDX = #idx#
+    </delete>
+
+</sqlMap>

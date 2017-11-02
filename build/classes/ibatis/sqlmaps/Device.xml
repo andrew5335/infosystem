@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org/DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!--  -->
+<sqlMap namespace="Device">
+
+	<insert id="insertISOResult" parameterClass="java.util.HashMap">
+		INSERT INTO
+            SOLGEEVALINFO
+            (
+            	COMPANYIDX, SPECIDX, SAMPLEIDX, SMPLPOINT, OILTYPE, AUTHORIZER, P4UM, P6UM, P14UM, ISO1, REGDATE
+            ) 
+            VALUES
+            (
+                #companyIdx#, #specIdx#, #sampleIdx#, #smplPoint#, #oilType#, #authorizer#, #p4um#, #p6um#, #p14um#, #iso1#, #regdate#
+            )
+	</insert>
+	
+	<insert id="insertNASResult" parameterClass="java.util.HashMap">
+		INSERT INTO
+            SOLGEEVALINFO
+            (
+            	COMPANYIDX, SPECIDX, SAMPLEIDX, SMPLPOINT, OILTYPE, AUTHORIZER, FIVE, FIFTEEN, TWENTYFIVE, FIFTY, HUNDRED, NAS, REGDATE
+            )
+            VALUES
+            (
+            	#companyIdx#, #specIdx#, #sampleIdx#, #smplPoint#, #oilType#, #authorizer#, #five#, #fifteen#, #twentyfive#, #fifty#, #hundred#, #nas#, #regdate#
+            )
+	</insert>
+	
+	<insert id="insertSAEResult" parameterClass="java.util.HashMap">
+		INSERT INTO
+            SOLGEEVALINFO
+            (
+            	COMPANYIDX, SPECIDX, SAMPLEIDX, SMPLPOINT, OILTYPE, AUTHORIZER, P4UM, P6UM, P14UM, P21UM, P38UM, P70UM, SAE, REGDATE
+            ) 
+            VALUES
+            (
+                #companyIdx#, #specIdx#, #sampleIdx#, #smplPoint#, #oilType#, #authorizer#, #p4um#, #p6um#, #p14um#, #p21um#, #p38um#, #p70um#, #sae#, #regdate#
+            )
+	</insert>
+
+</sqlMap>

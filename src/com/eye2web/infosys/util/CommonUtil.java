@@ -1,0 +1,553 @@
+package com.eye2web.infosys.util;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URLEncoder;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.jxls.transformer.XLSTransformer;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.ClientAnchor;
+import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.Drawing;
+import org.apache.poi.ss.usermodel.Picture;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.util.IOUtils;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.web.multipart.MultipartFile;
+
+public class CommonUtil {
+
+	/**
+	 *
+	 * @param msg
+	 * @param url
+	 * @return
+	 */
+	public Map<String, Object> rtMap(String msg, String url) {
+
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap.put("msg", msg);
+		resultMap.put("url", url);
+
+		return resultMap;
+	}
+
+	/**
+	 * @Description HttpServletRequest to Map
+	 * @param req
+	 * @return
+	 */
+	public Map<String, Object> convertReqToMap(HttpServletRequest req) {
+
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		String strKey = "";
+
+		for (Enumeration e = req.getParameterNames(); e.hasMoreElements();) {
+			strKey = (String)e.nextElement();
+			resultMap.put(strKey, req.getParameter(strKey));
+		}
+
+		return resultMap;
+	}
+
+	/**
+	 * @Description Save file and return save path
+	 * @param upfile
+	 * @param req
+	 * @return
+	 */
+	public String fileUpload(MultipartFile upfile, HttpServletRequest req) {
+
+		String result = "";
+		String filename = "";
+		String filepath = "";
+
+		if(upfile != null) {
+			filename = upfile.getOriginalFilename();
+			System.out.println("File Name : " + filename);
+
+			long today = System.currentTimeMillis();
+			DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+			String todayDate = df.format(today);
+
+			String path = req.getSession().getServletContext().getRealPath("/");
+			System.out.println("Path1 : " + path);
+
+			File dir = new File(path + "/upload/" + todayDate + "/");
+
+			if(!dir.exists()) {
+				dir.mkdir();
+			}
+
+			try {
+				File file = new File(path + "/upload/" + todayDate + "/" + filename);
+				upfile.transferTo(file);
+				filepath = "/upload/" + todayDate + "/" + filename;
+				result = filepath;
+				System.out.println("Save Path : " +  filepath);
+			} catch(Exception e) {
+				e.toString();
+				result = "";
+			}
+
+		} else {
+			result = "";
+		}
+
+		return result;
+	}
+
+	/**
+	 * 파일 업로드 (텍스트 파일 업로드)
+	 * @param upfile
+	 * @param req
+	 * @param filegu
+	 * @return
+	 * @throws Exception
+	 */
+	public String fileUpload2(MultipartFile upfile, HttpServletRequest req, String filegu) throws Exception {
+
+		String result = "";
+		String filename = "";
+		String filepath = "";
+
+		if(upfile != null) {
+			filename = upfile.getOriginalFilename();
+			//filename = upfile.getOriginalFilename();
+
+			long today = System.currentTimeMillis();
+			DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+			String todayDate = df.format(today);
+
+			String path = req.getSession().getServletContext().getRealPath("/");
+			System.out.println("Path1 : " + path);
+
+			File dir = null;
+			if(filegu.equals("ISO")) {
+				dir = new File(path + "/upload/device/iso/" + todayDate + "/");
+			} else if(filegu.equals("NAS")) {
+				dir = new File(path + "/upload/device/nas/" + todayDate + "/");
+			} else if(filegu.equals("SAE")) {
+				dir = new File(path + "/upload/device/sae/" + todayDate + "/");
+			}
+
+			if(!dir.exists()) {
+				dir.mkdir();
+			}
+
+			try {
+				File file = null;
+				if(filegu.equals("ISO")) {
+					file = new File(path + "/upload/device/iso/" + todayDate + "/"  + filename);
+					filepath = "/upload/device/iso/" + todayDate + "/"  + filename;
+				} else if(filegu.equals("NAS")) {
+					file = new File(path + "/upload/device/nas/" + todayDate + "/" + filename);
+					filepath = "/upload/device/nas/" + todayDate + "/" + filename;
+				} else if(filegu.equals("SAE")) {
+					file = new File(path + "/upload/device/sae/" + todayDate + "/" + filename);
+					filepath = "/upload/device/sae/" + todayDate + "/" + filename;
+				}
+
+				upfile.transferTo(file);
+				result = filepath;
+			} catch(Exception e) {
+				e.toString();
+				System.out.println("파일경로문제 : " + e.toString());
+				result = "fail";
+			}
+		} else {
+			result = "fail";
+		}
+
+		return result;
+	}
+
+	/**
+	 * File Read and Produce resultMap
+	 * @param filePath
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<String, Object> fileRead(HttpServletRequest req, String filePath) throws Exception {
+
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		if(filePath != null && filePath != "" && !filePath.equals("")) {
+			// read file and produce resultMap
+			String path = req.getSession().getServletContext().getRealPath("/");
+	        BufferedReader br = null;
+	        InputStreamReader isr = null;
+	        FileInputStream fis = null;
+	        File file = new File(path + filePath);
+
+	        String temp = "";
+	        String content = "";
+
+			try {
+				fis = new FileInputStream(file);
+				isr = new InputStreamReader(fis, "UTF-8");
+				br = new BufferedReader(isr);
+
+				while( (temp = br.readLine()) != null) {
+	                content += temp + "\n";
+					//String[] conts = temp.split("\n");
+					//resultMap.put(conts[0], conts[1]);
+	            }
+				System.out.println("================== 파일 내용 출력 ==================");
+	            System.out.println(content);
+				//System.out.println(resultMap.toString());
+
+	            String[] contentArr = content.split("\n");
+	            System.out.println("전체 길이 : " + contentArr.length);
+	            for(int i=0; i < contentArr.length; i++) {
+	            	if(!contentArr[(i*2)].equals("") && contentArr[(i*2)] != null && contentArr[(i*2)] != null) {
+	            		System.out.println("타이틀 : " + contentArr[(i*2)]);
+	            		System.out.println("내용 : " + contentArr[(i*2)+1]);
+	            		resultMap.put(contentArr[(i*2)], contentArr[(i*2)+1]);
+	            	}
+	            }
+
+			} catch (FileNotFoundException e) {
+	            e.printStackTrace();
+	            System.out.println("파일이 없습니다.");
+	            resultMap = null;
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            System.out.println("파일 읽기에 실패하였습니다.");
+	            //resultMap = null;
+			} finally {
+				try {
+	                fis.close();
+	            } catch (IOException e) {
+	                e.printStackTrace();
+	            }
+
+	            try {
+	                isr.close();
+	            } catch (IOException e) {
+	                e.printStackTrace();
+	            }
+
+	            try {
+	                br.close();
+	            } catch (IOException e) {
+	                e.printStackTrace();
+	            }
+			}
+		}
+		return resultMap;
+	}
+
+	/**
+	 * @Description Excel File Download
+	 * @param excelMap
+	 * @param gu
+	 */
+	public void excelDownload(Map excelMap, String gu, String excelName, HttpServletResponse response, HttpServletRequest request, String reportLocation, String path, String excelgu) throws Exception {
+
+		long today = System.currentTimeMillis();
+		DateFormat df = new SimpleDateFormat("yyMMdd");
+		DateFormat df2 = new SimpleDateFormat("yyyyMMddHHmmss");
+		String todayDate = df.format(today);
+		String fileDate = df2.format(today);
+		String templateFilePath = "";
+		String infoNo = "";
+		String reportNo = "";
+		String fileExt = "";
+		int pictureIdx = 0;
+		//String path = request.getSession().getServletContext().getRealPath("/");
+		List visco1 = new ArrayList();
+		List visco2 = new ArrayList();
+		List visco3 = new ArrayList();
+
+		visco1 = (List) excelMap.get("viscosityList1");
+		visco2 = (List) excelMap.get("viscosityList2");
+		visco3 = (List) excelMap.get("viscosityList3");
+
+		if(visco1 != null && visco1.size() > 0) {
+			for(int i=0; i < visco1.size(); i++) {
+				System.out.println("visco1 : " + visco1.get(i).toString());
+				System.out.println("visco2 : " + visco2.get(i).toString());
+				System.out.println("visco3 : " + visco3.get(i).toString());
+			}
+		}
+
+		if(excelgu != "excel2" && excelgu != "exam") {
+			templateFilePath = reportLocation + "/infoExcel.xls";    // excel template
+		} else {
+			if(excelgu != "exam") {
+				//templateFilePath = reportLocation + "/wearcheck.xls";    // wearcheck excel template
+				templateFilePath = reportLocation + "/test.xls";    // wearcheck excel template
+			} else {
+				templateFilePath = reportLocation + "/examresult.xls";
+			}
+		}
+		String downFile = excelName.trim() + "_" + fileDate + ".xls";
+		System.out.println("다운로드할 엑셀파일명 : " + downFile);
+		System.out.println("template Location : " + templateFilePath);
+
+		if(excelgu != "excel2") {
+			infoNo = String.format("%04d", excelMap.get("IDX"));
+			reportNo = todayDate + "-" + infoNo;
+		} else {
+			reportNo = todayDate;
+		}
+		//excelMap.put("reportNo", reportNo);
+
+		File excelFile = new File(templateFilePath);
+		XLSTransformer transformer = new XLSTransformer();
+
+		Workbook wb = new SXSSFWorkbook(100);
+		//Workbook wb = transformer.transformXLS(new FileInputStream(excelFile), excelMap);
+		wb = transformer.transformXLS(new FileInputStream(excelFile), excelMap);
+
+//		List sheetNames = new ArrayList();
+//		List workMap = new ArrayList();
+//
+//		sheetNames.add("Exam Result");
+//		workMap.add(excelMap);
+//
+//		if(examMap != null && examMap.size() > 0) {
+//			sheetNames.add("Exam Report");
+//			workMap.add(examMap);
+//		}
+//
+//		wb = transformer.transformMultipleSheetsList(new FileInputStream(excelFile), workMap, sheetNames, "map", new HashMap(), 0);
+
+		if(excelgu != "exam") {
+			Iterator rowIterator = wb.getSheetAt(0).rowIterator();
+			while(rowIterator.hasNext()) {
+				Row row =  (Row) rowIterator.next();
+				Iterator cellIter = row.cellIterator();
+				while (cellIter.hasNext()){
+					Cell cell = (Cell) cellIter.next();
+					final String IMG_PREFIX = "#IMG#";
+					if(cell.toString().startsWith(IMG_PREFIX)){
+						System.out.println("이미지 Prefix가 있을 경우");
+						String cellValue = cell.toString();
+						cell.setCellValue("");
+						String imagePath = cellValue.replaceFirst(IMG_PREFIX, "");
+						fileExt = this.fileExt(imagePath);
+						System.out.println("이미지파일 : " + imagePath);
+						File imageFile = new File(path + imagePath);
+						if(imageFile.exists()){
+							System.out.println("이미지 파일이 있을 경우");
+							FileInputStream isi = new FileInputStream(imageFile);
+	                        //ImageTools imageTools = new ImageTools();
+	                        //byte[] imgBytes = imageTools.resizeImage(isi, 100);
+							byte[] imgBytes = IOUtils.toByteArray(isi);
+							if(fileExt.equals("jpg") ||  fileExt.equals("JPG") || fileExt.equals("jpeg")) {
+								pictureIdx = wb.addPicture(imgBytes, Workbook.PICTURE_TYPE_JPEG);
+							} else if(fileExt.equals("png") || fileExt.equals("PNG")) {
+								pictureIdx = wb.addPicture(imgBytes, Workbook.PICTURE_TYPE_PNG);
+							} else if(fileExt.equals("gif") || fileExt.equals("GIF")) {
+								pictureIdx = wb.addPicture(imgBytes, XSSFWorkbook.PICTURE_TYPE_GIF);
+							}
+	                        CreationHelper helper = wb.getCreationHelper();
+
+	                        Drawing drawing = wb.getSheetAt(0).createDrawingPatriarch();
+	                        ClientAnchor anchor = helper.createClientAnchor();
+//	                        anchor.setDx1(30 * XSSFShape.EMU_PER_PIXEL);
+//	                        anchor.setDx2(30 * XSSFShape.EMU_PER_PIXEL);
+//	                        anchor.setDy1(30 * XSSFShape.EMU_PER_PIXEL);
+//	                        anchor.setDy2(30 * XSSFShape.EMU_PER_PIXEL);
+
+	                        anchor.setCol1(cell.getColumnIndex());
+	                        anchor.setRow1(cell.getRowIndex());
+	                        double scale = 0.5;
+	                        Picture pict = drawing.createPicture(anchor, pictureIdx);
+	                        pict.resize(scale);
+	                        //pict.resize();
+	                        System.out.println("insert image success !!!");
+	                        isi.close();
+						}
+					}
+				}
+			}
+		}
+
+		response.setHeader( "Content-disposition", "attachment;filename=" + URLEncoder.encode(downFile,"UTF-8"));
+		response.setContentType("application/x-msexcel");
+
+		Sheet sheet = wb.getSheetAt(0);
+		sheet.protectSheet("solgeprotect");
+		wb.write(response.getOutputStream());
+
+		response.getOutputStream().flush();
+		response.getOutputStream().close();
+	}
+
+	public void excelDownload2(Map excelMap, String gu, String excelName, HttpServletResponse response, HttpServletRequest request, String reportLocation, String path, String excelgu) throws Exception {
+
+		long today = System.currentTimeMillis();
+		DateFormat df = new SimpleDateFormat("yyMMdd");
+		DateFormat df2 = new SimpleDateFormat("yyyyMMddHHmmss");
+		String todayDate = df.format(today);
+		String fileDate = df2.format(today);
+		String templateFilePath = "";
+		String infoNo = "";
+		String reportNo = "";
+		String fileExt = "";
+		int pictureIdx = 0;
+		//String path = request.getSession().getServletContext().getRealPath("/");
+
+		templateFilePath = reportLocation + "/examResult.xls";    // excel template
+
+		String downFile = excelName.trim() + "_" + fileDate + ".xls";
+		System.out.println("다운로드할 엑셀파일명 : " + downFile);
+		System.out.println("template Location : " + templateFilePath);
+
+		infoNo = String.format("%04d", excelMap.get("IDX"));
+		reportNo = todayDate + "-" + infoNo;
+
+		excelMap.put("reportNo", reportNo);
+
+		File excelFile = new File(templateFilePath);
+		XLSTransformer transformer = new XLSTransformer();
+
+		Workbook wb = new SXSSFWorkbook(100);
+		//Workbook wb = transformer.transformXLS(new FileInputStream(excelFile), excelMap);
+		wb = transformer.transformXLS(new FileInputStream(excelFile), excelMap);
+
+		response.setHeader( "Content-disposition", "attachment;filename=" + URLEncoder.encode(downFile,"UTF-8"));
+		response.setContentType("application/x-msexcel");
+
+		Sheet sheet = wb.getSheetAt(0);
+		sheet.protectSheet("solgeprotect");
+		wb.write(response.getOutputStream());
+
+		response.getOutputStream().flush();
+		response.getOutputStream().close();
+	}
+
+	/**
+	 * @Description File Download
+	 * @param fileName
+	 * @param filePath
+	 * @param req
+	 * @param res
+	 * @throws Exception
+	 */
+	public void fileDownload(String fileName, String filePath, HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		String strFilenameOutput=new String(fileName.getBytes("euc-kr"),"8859_1");
+		String path = req.getSession().getServletContext().getRealPath("/");
+		File file=new File(path + filePath + "/" + fileName);
+
+		byte b[]=new byte[(int)file.length()];
+		res.setHeader("Content-Disposition","attachment;filename="+strFilenameOutput);
+		res.setHeader("Content-Length",String.valueOf(file.length()));
+		if(file.isFile()){
+			BufferedInputStream fin=new BufferedInputStream(new FileInputStream(file));
+			BufferedOutputStream outs=new BufferedOutputStream(res.getOutputStream());
+			int read=0;
+			while((read=fin.read(b))!=-1){outs.write(b,0,read);}
+			outs.close();
+			fin.close();
+		}
+
+	}
+
+	/**
+	 * 파일 확장자 확인
+	 * @param filename
+	 * @return
+	 * @throws Exception
+	 */
+	public String fileExt(String filename) throws Exception {
+		return filename.substring(filename.lastIndexOf(".")+1,filename.length());
+	}
+
+	/**
+	 * 리스트를 배열로 변경
+	 * 리스트안에 배열이 2개를 넘지 않는 경우에만 해당하며
+	 * 두개의 배열을 엇갈리게 배치
+	 * @param list
+	 * @return
+	 */
+	public String[] concatArr(List list) {
+
+		String[] arr1 = null;
+		String[] arr2 = null;
+		String[] newArr1 = null;
+		String[] newArr2 = null;
+		System.out.println("리스트 사이즈 : " + list.size());
+
+		// 리스트 사이즈가 1보다 큰 경우 즉 2인 경우
+		if(list.size() > 1) {
+		    arr1 = (String[]) list.get(0);
+		    arr2 = (String[]) list.get(1);
+		    System.out.println("arr1 : " + arr1);
+		    System.out.println("arr2 : " + arr2);
+		    System.out.println("arr1 length : " + arr1.length);
+		    System.out.println("arr2 length : " + arr2.length);
+
+			newArr1 = new String[arr1.length];
+			newArr2 = new String[arr2.length];
+
+			for(int i=0; i < arr1.length; i++) {
+				newArr1[i] = arr1[i];
+			}
+
+			for(int j=0; j < arr2.length; j++) {
+				newArr2[j] = arr2[j];
+			}
+
+		} else {
+			arr1 = (String[]) list.get(0);    // 리스트 사이즈가 1인 경우
+
+			newArr1 = new String[arr1.length];
+			newArr2 = new String[arr1.length];
+
+			if(arr1[0].equals("RDE")) {
+				for(int i=0; i < arr1.length; i++) {
+					newArr1[i] = arr1[i];
+				}
+			} else {
+				for(int j=0; j < arr1.length; j++) {
+					newArr2[j] = arr1[j];
+				}
+			}
+		}
+
+		System.out.println("배열 1번 : " + Arrays.toString(newArr1));
+		System.out.println("배열 2번 : " + Arrays.toString(newArr2));
+
+		int listSize = newArr1.length + newArr2.length;
+		String[] resultArr = new String[listSize];
+
+		for(int k=0; k < newArr1.length; k++) {
+			resultArr[k*2] = newArr1[k];
+		}
+
+		for(int l=0; l < newArr2.length; l++) {
+			resultArr[(l*2)+1] = newArr2[l];
+		}
+
+		System.out.println("배열 결과값 : " + Arrays.toString(resultArr));
+		return resultArr;
+	}
+
+}

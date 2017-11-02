@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org/DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!--  -->
+<sqlMap namespace="Sample">
+	<select id="getList" resultClass="java.util.HashMap">
+		SELECT 
+			IDX
+			, TITLE
+			, CONTENT
+			, REGDATE
+			, WRITER
+			, EMAIL
+			, UPLOADFILE
+			, HITCNT
+		FROM
+			BOARD
+	</select>
+	
+	<select id="getView" resultClass="java.util.HashMap">
+		SELECT
+			TITLE
+			, CONTENT
+			, REGDATE
+			, WRITER
+			, EMAIL
+			, UPLOADFILE
+			, HITCNT
+		FROM
+			BOARD
+		WHERE
+			IDX = #idx#
+	</select>
+	
+	<insert id="insertItem" parameterClass="java.util.HashMap">
+		INSERT INTO
+			BOARD
+			(
+				TITLE
+				, CONTENT
+				, REGDATE
+				, WRITER
+				, PASSWD
+				, EMAIL
+				, UPLOADFILE
+			) VALUES (
+				#title#
+				, #contents#
+				, date_format( now( ) , '%Y%m%d%H%i%s' )
+				, #writer#
+				, PASSWORD(#passwd#)
+				, #email#
+				, #uploadfile#
+			)
+	</insert>
+	
+	<delete id="deleteItem" parameterClass="java.util.HashMap">
+		DELETE FROM
+			BOARD
+		WHERE
+			IDX = #idx#
+	</delete>
+	
+	<update id="updateItem" parameterClass="java.util.HashMap">
+		UPDATE
+			BOARD
+		SET
+			TITLE = #title#
+			, CONTENT = #content#
+			, WRITER = #writer#
+			, PASSWD = PASSWORD(#passwd#)
+			, EMAIL = #email#
+			, UPLOADFILE = #uploadfile#
+		WHERE
+			IDX = #idx#
+	</update>
+	
+	<update id="updateHitCnt" parameterClass="java.lang.Integer">
+	    UPDATE
+	        BOARD
+	    SET
+	        HITCNT = HITCNT + 1
+	    WHERE
+	        IDX = #idx#
+	</update>
+</sqlMap>

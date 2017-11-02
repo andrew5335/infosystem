@@ -1,0 +1,44 @@
+package com.eye2web.infosys.util;
+
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class CommonUtil {
+
+	/**
+	 *
+	 * @param msg
+	 * @param url
+	 * @return
+	 */
+	public Map<String, Object> rtMap(String msg, String url) {
+
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap.put("msg", msg);
+		resultMap.put("url", url);
+
+		return resultMap;
+	}
+
+	/**
+	 * @Description HttpServletRequest to Map
+	 * @param req
+	 * @return
+	 */
+	public Map<String, Object> convertReqToMap(HttpServletRequest req) {
+
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		String strKey = "";
+
+		for (Enumeration e = req.getParameterNames(); e.hasMoreElements();) {
+			strKey = (String)e.nextElement();
+			resultMap.put(strKey, req.getParameter(strKey));
+		}
+
+		return resultMap;
+	}
+
+}

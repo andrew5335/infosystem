@@ -1,0 +1,863 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>    
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>OilTalk Report System</title>
+<%
+    String type = (String)request.getAttribute("type");
+	String idx = (String)request.getAttribute("idx");
+	Map<String, Object> infoMap = (Map<String, Object>)request.getAttribute("infoMap");
+%>
+<script type="text/javascript" src="/js/jquery-1.11.1.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+    	$("#chktest").click(function(e) {
+    		var chk = $(this).is(":checked");
+    		//alert(chk);
+    		if(chk) {
+    			document.getElementById("testtable").style.display = "";
+    		} else {
+    			document.getElementById("testtable").style.display = "none";
+    		}
+    	});
+    	
+    	$("#condition").click(function(e){
+    		var chk = $(this).is(":checked");
+    		if(chk) {
+    			document.getElementById("conditiontbl").style.display = "";
+    		} else {
+    			document.getElementById("conditiontbl").style.display = "none";
+    		}
+    	});
+    	
+    	$("#contamination").click(function(e){
+    		var chk = $(this).is(":checked");
+    		if(chk) {
+    			document.getElementById("contaminationtbl").style.display = "";
+    		} else {
+    			document.getElementById("contaminationtbl").style.display = "none";
+    		}
+    	});
+    	
+    	$("#wear").click(function(e){
+    		var chk = $(this).is(":checked");
+    		if(chk) {
+    			document.getElementById("weartbl").style.display = "";
+    		} else {
+    			document.getElementById("weartbl").style.display = "none";
+    		}
+    	});
+    	
+    	$("#companyIdx").change(function(){
+    		var companyIdx = $(this).val();
+    		
+    		$.ajax({
+    			type: "POST", 
+    			url: "/info/machineList.info", 
+    			data: "companyIdx="+companyIdx, 
+    			success: function(msg){
+    				var resultObj = $.parseJSON(msg);
+    				var result = $("#specIdx");
+    				result.empty();
+    				result.append($("<option value=''></option>"));
+    				//alert(resultObj.result.length);
+    				for(i=0; i < resultObj.result.length; i++) {
+    					//alert(resultObj.result[i].IDX);
+    					//result +="<option value='"+resultObj.result[i].IDX+"'>"+resultObj.result[i].IDX+"</option>";
+    					result.append(
+    			                $('<option></option>').val(resultObj.result[i].IDX).html(resultObj.result[i].MACHINENAME)
+    			        );
+
+    				}
+    				//$("#speciIdx").html(result);
+    				$("#specIdx").show();
+    			} 
+    		});
+    	});
+    	
+    	$("#specIdx").change(function(){
+    		var specIdx = $(this).val();
+    		
+    		$.ajax({
+    			type: "POST", 
+    			url: "/info/smplList.info", 
+    			data: "specIdx="+specIdx, 
+    			success: function(msg){
+    				var resultObj = $.parseJSON(msg);
+    				var result = $("#sampleIdx");
+    				result.empty();
+    				result.append($("<option value=''></option>"));
+    				//alert(resultObj.result.length);
+    				for(i=0; i < resultObj.result.length; i++) {
+    					//alert(resultObj.result[i].IDX);
+    					//result +="<option value='"+resultObj.result[i].IDX+"'>"+resultObj.result[i].IDX+"</option>";
+    					result.append(
+    			                $('<option></option>').val(resultObj.result[i].IDX).html(resultObj.result[i].SPECINAME)
+    			        );
+
+    				}
+    				//$("#speciIdx").html(result);
+    				$("#sampleIdx").show();
+    			} 
+    		});
+    	});
+    	
+    	$("#sampleIdx").change(function(){
+    		var sampleIdx = $(this).val();
+    		
+    		$.ajax({
+    			type: "POST", 
+    			url: "/info/smplPoint.info", 
+    			data: "sampleIdx="+sampleIdx, 
+    			success: function(msg){
+    				var resultObj = $.parseJSON(msg);
+    				//alert(resultObj.result);
+    				$("#smplpoint").val(resultObj.result);
+    			}
+    		});
+    	});
+    	
+    	$("#modify").click(function(e) {
+    		var modify;
+    		modify = confirm("수정하시겠습니까?");
+    		
+    		if(modify == true) {
+    			location.href="/info/infoWrite.info?idx=<%=idx%>";
+    		} else {
+    			alert("수정이 취소되었습니다.");
+    		} 
+    	});
+    	
+    	$("#delete").click(function(e) {
+    		var del;
+    		del = confirm("삭제하시겠습니까?");
+    		
+    		if(del == true) {
+    			location.href="/info/infoDelete.info?idx=<%=idx%>";
+    		} else {
+    			alert("삭제가 취소되었습니다.");
+    		}
+    	});
+    	
+    	$("#list").click(function(e) {
+    		location.href="/info/infoList.info";
+    	});
+    	
+    	$("#infoExcelDownload").click(function(e) {
+    		location.href="/info/infoExcelDownload.info?idx=<%=idx%>";
+    	});
+    	
+    });
+</script>
+</head>
+<body>
+    <table width="100%" align="center">
+        <tr>
+            <td align="left"><h2 class="pageTitleH1">Report Data 보기</h2></td>
+        </tr>
+        <tr>
+            <td height="30">&nbsp;</td>
+        </tr>
+        <tr>
+            <td align="right"><input name="infoExcelDownload" class="btn_style4" id="infoExcelDownload" type="submit" value="엑셀다운로드"/></td>
+        </tr>
+    </table>
+    
+    <table class="tableTypeB" width="100%" align="center">
+        <tr>
+            <th>업체명</th>
+            <th>장치타입</th>
+            <th>시료명</th>
+            <th>샘플링포인트</th>
+            <th>유종</th>
+            <th>담당자</th>
+        </tr>
+        <tr>
+            <td style="font-size:12px;" align="center"><%=infoMap.get("COMPANYNAME")%></td>
+            <td style="font-size:12px;" align="center"><%=infoMap.get("MACHINENAME")%></td>
+            <td style="font-size:12px;" align="center"><%=infoMap.get("SAMPLENAME")%></td>
+            <td style="font-size:12px;" align="center"><%=infoMap.get("SMPLPOINT")%></td>
+            <td style="font-size:12px;" align="center"><%=infoMap.get("OILTYPE")%></td>
+            <td style="font-size:12px;" align="center"><%=infoMap.get("AUTHORIZER")%></td>
+        </tr>
+<!--         <tr> -->
+<!--             <td colspan="5"> -->
+<!--                 <table width="100%" align="center"> -->
+<!--                     <tr> -->
+<!--                         <td style="font-size:12px;" align="center">샘플링포인트</td> -->
+<!--                         <td style="font-size:12px;" align="center"></td> -->
+<!--                     </tr> -->
+<!--                 </table> -->
+<!--             </td> -->
+<!--         </tr> -->
+    </table>
+<!--     <table width="100%" align="center"> -->
+<!--         <tr> -->
+<!--             <td style="font-size:12px;" align="center" width="33%"><input type="checkbox" id="contamination" name="contamination" value="open"">1. Contamination</td> -->
+<!--             <td style="font-size:12px;" align="center" width="33%"><input type="checkbox" id="condition" name="condition" value="open"">2. Oil Condition</td> -->
+<!--             <td style="font-size:12px;" align="center" width="33%"><input type="checkbox" id="wear" name="wear" value="open"">3. Wear</td> -->
+<!--         </tr> -->
+<!--     </table> -->
+    <table class="tableTypeB" cellpadding="0" cellspacing="1" border="0" id="contaminationtbl" name="contiminationtbl" width="100%" align="center" style="display:;">
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="center" valign="bottom"><b>1. Contamination 항목</b></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Particle Count ; Laser Particle counter</b></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:20px;" align="left" valign="bottom">- Class</td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">ISO 4406</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("ISO1")%></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">NAS 1638</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("NAS")%></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">SAE AS 4059</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("SAE")%></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:20px;" align="left" valign="bottom">- 입자크기별(㎛) 개수(Number of particles/ml)</td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>4um (c)</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("P4UM")%></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>6um (c)</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("P6UM")%></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>14um (c)</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("P14UM")%></td>
+			        </tr>
+			        <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>21um (c)</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("P21UM")%></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>38um (c)</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("P38UM")%></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>70um</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("P70UM")%></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>>20um Wear Mode</b></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:20px;" align="left" valign="bottom">- Cutting Wear</td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Counts</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("CCOUNT")%></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Average</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("CAVERAGE")%></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>STD</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("CSTD")%></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Max size</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("CMAXSIZE")%></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:20px;" align="left" valign="bottom">- Severe Sliding Wear</td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Counts</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("SCOUNT")%></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Average</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("SAVERAGE")%></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>STD</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("SSTD")%></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Max size</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("SMAXSIZE")%></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:20px;" align="left" valign="bottom">- Fatigue</td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Counts</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("FCOUNT")%></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Average</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("FAVERAGE")%></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>STD</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("FSTD")%></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Max size</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("FMAXSIZE")%></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:20px;" align="left" valign="bottom">- Nonmetallic Particles</td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Counts</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("NCOUNT")%></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Average</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("NAVERAGE")%></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>STD</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("NSTD")%></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Max size</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("NMAXSIZE")%></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+                        <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="center">Cutting Wear</td>
+                        <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="center">Fatigue Wear</td>
+                        <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="center">Nonmetalic Particles</td>
+                    </tr>
+                    <tr>
+                        <td><img width="100" src="<%=infoMap.get("UCUTTINGWEAR")%>"></td>
+                        <td><img width="100" src="<%=infoMap.get("UFATIGUEWEAR")%>"></td>
+                        <td><img width="100" src="<%=infoMap.get("UNONMETALICPARTICLES")%>"></td>
+                    </tr>
+                    <tr>
+                        <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="center">Severe Sliding Wear</td>
+                        <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="center">Water</td>
+                        <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="center">Fiber</td>
+                    </tr>
+                    <tr>
+                        <td><img width="100" src="<%=infoMap.get("USEVERESLIDINGWEAR")%>"></td>
+                        <td><img width="100" src="<%=infoMap.get("UWATER")%>"></td>
+                        <td><img width="100" src="<%=infoMap.get("UFIBER")%>"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Particle Contaminaion by the counting method using an optical microscope</b></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:20px;" align="left" valign="bottom">- Class</td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">ISO 4406</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("ISO2")%></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">NAS 1638</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("NAS2")%></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">SAE AS 4059</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("SAE2")%></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:20px;" align="left" valign="bottom">- 입자크기별(㎛) 개수(Number of particles/ml)</td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+	            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">5-15um</td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("FIVE")%></td>
+	            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">15-25um</td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("FIFTEEN")%></td>
+	            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">25-50um</td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("TWENTYFIVE")%></td>
+	            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">50-100um</td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("FIFTY")%></td>
+	        </tr>
+	        <tr>
+	            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>100um</td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"><%=infoMap.get("HUNDRED")%></td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+	        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+                        <td colspan="3" width="200" style="font-size:12px; background-color: #cccccc" align="center">Particle Information</td>
+                    </tr>
+                    <tr>
+                        <td><img width="100" src="<%=infoMap.get("UPARTICLEINFO1")%>"></td>
+                        <td><img width="100" src="<%=infoMap.get("UPARTICLEINFO2")%>"></td>
+                        <td><img width="100" src="<%=infoMap.get("UPARTICLEINFO3")%>"></td>        
+                    </tr>
+                    <tr>
+                        <td><img width="100" src="<%=infoMap.get("UPARTICLEINFO4")%>"></td>
+                        <td><img width="100" src="<%=infoMap.get("UPARTICLEINFO5")%>"></td>
+                        <td></td>
+                    </tr>
+                </table>
+                <table width="100%" align="center">
+                    <tr>
+                        <td width="200" style="font-size:12px; background-color: #cccccc" align="center">Membrane Patch Image1</td>
+                        <td><img width="100" src="<%=infoMap.get("UMEMBRANEPATCHIMG1")%>"></td>
+                    </tr>
+                </table>
+                <table width="100%" align="center">
+                    <tr>
+                        <td colspan="3" width="200" style="font-size:12px; background-color: #cccccc" align="center">Membrane Patch Image2 (확대)</td>
+                    </tr>
+                    <tr>
+                        <td valign="top"><img width="100" src="<%=infoMap.get("UMEMBRANEPATCHIMG2")%>"></td>
+                        <td valign="top"><img width="100" src="<%=infoMap.get("UMEMBRANEPATCHIMG3")%>"></td>
+                        <td valign="top"><img width="100" src="<%=infoMap.get("UMEMBRANEPATCHIMG4")%>"></td>
+                    </tr>
+                    <tr>
+                        <td valign="top"><img width="100" src="<%=infoMap.get("UMEMBRANEPATCHIMG5")%>"></td>
+                        <td valign="top"><img width="100" src="<%=infoMap.get("UMEMBRANEPATCHIMG6")%>"></td>
+                        <td valign="top"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Water Content (ppm)</b></td>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Chlorine (ppm)</b></td>
+        </tr>
+        <tr>
+            <td width="200" height="20" style="font-size:12px; background-color: #cccccc" align="right">Water</td>
+            <td colspan="3" height="20" style="font-size:12px;" align="left"><%=infoMap.get("WATER")%></td>
+            <td width="200" height="20" style="font-size:12px; background-color: #cccccc" align="right">Chlorine</td>
+            <td colspan="3" height="20" style="font-size:12px;" align="left"><%=infoMap.get("CHLORINE")%></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Membrane Patch Colorimetry</b></td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">iMPC Value</td>
+			            <td height="20" style="font-size:12px; " align="left"><%=infoMap.get("IMPCVAL")%></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">MPC Value</td>
+			            <td height="20" style="font-size:12px;" align="left"><%=infoMap.get("MPCVAL")%></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">평가</td>
+			            <td height="20" style="font-size:12px;" align="left"><%=infoMap.get("EVAL")%></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">Patch</td>
+            <td colspan="3" height="20" style="font-size:12px; " align="left"><img width="100" src="<%=infoMap.get("UPATCH")%>"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">Patch 확대</td>
+            <td colspan="3" height="20" style="font-size:12px;" align="left"><img width="100" src="<%=infoMap.get("UPATCHEXT")%>"></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>MPC for Phosphate Ester Fluids (Patch wt(mg))</b></td>
+        </tr>
+        <tr>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right" valign="bottom">MPC weight</td>
+            <td width="100" height="20" style="font-size:12px; " align="left"><%=infoMap.get("MPCWEIGHT")%></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Patch test</b></td>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Insolubles test for Phosphate Ester Fluids</b></td>
+        </tr>
+        <tr>
+            <td colspan="4" width="400" height="20" style="font-size:12px; " align="left"><img width="100" src="<%=infoMap.get("UPATCHTEST")%>"></td>
+            <td colspan="4" width="400" height="20" style="font-size:12px;" align="left"><img width="100" src="<%=infoMap.get("USLUDGE")%>"></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Blotter spot test</b></td>
+        </tr>
+        <tr>
+            <td colspan="8" width="400" height="20" style="font-size:12px; " align="left"><img width="100" src="<%=infoMap.get("UBLOTTER")%>"></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Elemental analysis ; Contamination Metals(ppm)</b></td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+                        <td colspan=2" height="20" style="font-size:12px; background-color: #cccccc" align="center">Silicon (Si)</td>
+                        <td colspan=2" height="20" style="font-size:12px; background-color: #cccccc" align="center">Boron (B)</td>
+                        <td colspan=2" height="20" style="font-size:12px; background-color: #cccccc" align="center">Sodium (Na)</td>
+                    </tr>
+                    <tr>
+                        <td height="20" style="font-size:12px; background-color: #cccccc" align="center">RDE</td>
+                        <td height="20" style="font-size:12px; background-color: #cccccc" align="center">RFS</td>
+                        <td height="20" style="font-size:12px; background-color: #cccccc" align="center">RDE</td>
+                        <td height="20" style="font-size:12px; background-color: #cccccc" align="center">RFS</td>
+                        <td height="20" style="font-size:12px; background-color: #cccccc" align="center">RDE</td>
+                        <td height="20" style="font-size:12px; background-color: #cccccc" align="center">RFS</td>
+                    </tr>
+                    <tr>
+                        <td width="133" height="20" style="font-size:12px; " align="left"><%=infoMap.get("SILICONRDE")%></td>
+                        <td width="133" height="20" style="font-size:12px; " align="left"><%=infoMap.get("SILICONRFS")%></td>
+                        <td width="133" height="20" style="font-size:12px; " align="left"><%=infoMap.get("BORONRDE")%></td>
+                        <td width="133" height="20" style="font-size:12px; " align="left"><%=infoMap.get("BORONRFS")%></td>
+                        <td width="133" height="20" style="font-size:12px; " align="left"><%=infoMap.get("SODIUMRDE")%></td>
+                        <td width="133" height="20" style="font-size:12px; " align="left"><%=infoMap.get("SODIUMRFS")%></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>FT-IR ; Contamination (Abs)</b></td>
+        </tr>
+        <tr>
+            <td colspan="8" align="center">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Oxidation ASTM</td>
+			            <td width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Detergent(sulfonate)</td>
+			            <td width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Diesel ASTM</td>
+			            <td width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Ethylene Glycol Coolant ASTM</td>
+			        </tr>
+			        <tr>
+			            <td width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("OXIDATION")%></td>
+			            <td width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("DETERGENT")%></td>
+			            <td width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("DIESEL")%></td>
+			            <td width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("ETHYLENE")%></td>
+			        </tr>
+			        <tr>
+			            <td width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Nitration ASTM</td>
+			            <td width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Soot Loading ASTM Soot (% w/w)</td>
+			            <td width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Sulfate by products ASTM</td>
+			            <td width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Water (ASTM Petroluem  Lubricant)</td>
+			        </tr>
+			        <tr>
+			            <td width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("NITRATION")%></td>
+			            <td width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("SOOTLOADING")%></td>
+			            <td width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("SULFATE")%></td>
+			            <td width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("WATERASTM")%></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+    
+    <table width="100%" align="center">
+        <tr>
+            <td height="20"></td>
+        </tr>
+    </table>
+    
+    <table id="conditiontbl" name="conditiontbl" width="100%" align="center" style="display:;">
+        <tr>
+            <td colspan="4" style="font-size:12px;" align="center"><b>2. Oil Condition 항목</b></td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Viscosity (cSt)</b></td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <table width="100%" align="center">
+                    <tr>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Viscosity@40℃</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Viscosity@100℃</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Viscosity index</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("VISCOSITY40")%></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("VISCOSITY100")%></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("VISCOSITYINDEX")%></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td width="400" colspan="2" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Acid Number (mgKOH/g)</b></td>
+            <td width="400" colspan="2" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Specific Gravity</b></td>
+        </tr>
+        <tr>
+            <td width="200" style="font-size:12px; height:20px; width:200px; background-color: #cccccc" align="center" valign="bottom">Acid Number</td>
+            <td width="200" style="font-size:12px; height:20px; width:200px;" align="left" valign="bottom"><%=infoMap.get("ACIDNUMBER")%></td>
+            <td width="200" style="font-size:12px; height:20px; width:200px; background-color: #cccccc" align="center" valign="bottom">Specific Gravity</td>
+            <td width="200" style="font-size:12px; height:20px; width:200px;" align="left" valign="bottom"><%=infoMap.get("SPECIFICGRAVITY")%></td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Remaining Useful Life; RULER (%)</b></td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <table width="100%" align="center">
+                    <tr>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RUL1_Peak1</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RUL2_Peak2</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RUL AREA_TOTAL</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("RUL1PEAK")%></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("RUL2PEAK")%></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("RULAREATOTAL")%></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Remaining Useful Life; RULER (%)</b></td>
+        </tr>
+            <td style="font-size:12px; height:20px; background-color: #cccccc;" align="center" valign="bottom">RULER NUMBER</td>
+            <td colspan="3"  style="font-size:12px; height:20px;" align="left" valign="bottom"><%=infoMap.get("RULERNUMBER")%></td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Foaming characteristic of oil (ml)</b></td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <table width="100%" align="center">
+                    <tr>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">24℃ (tendency < 450ml)</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">93.5℃ (stability 0ml(Nil))</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">24℃ (stability 0ml(Nil))</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("TENDENCY")%></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("STABILITY")%></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("NIL")%></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td width="400" colspan="2" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Water separability (min)</b></td>
+            <td width="400" colspan="2" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Pour point (Celsius)</b></td>
+        </tr>
+        <tr>
+            <td width="200" style="font-size:12px; height:20px; width:200px; background-color: #cccccc" align="center" valign="bottom">Water separability</td>
+            <td width="200" style="font-size:12px; height:20px; width:200px;" align="left" valign="bottom"><%=infoMap.get("WATERSEPARABILITY")%></td>
+            <td width="200" style="font-size:12px; height:20px; width:200px; background-color: #cccccc" align="center" valign="bottom">Pour point </td>
+            <td width="200" style="font-size:12px; height:20px; width:200px;" align="left" valign="bottom"><%=infoMap.get("POURPOINT")%></td>
+        </tr>
+        <tr>
+            <td width="400" colspan="2" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Flash point (Celsius) ; Clevenland open cup</b></td>
+            <td width="400" colspan="2" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Flash point (Celsius) ; Pensky-martens closed cup</b></td>
+        </tr>
+        <tr>
+            <td width="200" style="font-size:12px; height:20px; width:200px; background-color: #cccccc" align="center" valign="bottom">Flash point</td>
+            <td width="200" style="font-size:12px; height:20px; width:200px;" align="left" valign="bottom"><%=infoMap.get("FLASHPOINT")%></td>
+            <td width="200" style="font-size:12px; height:20px; width:200px; background-color: #cccccc" align="center" valign="bottom">Flash point</td>
+            <td width="200" style="font-size:12px; height:20px; width:200px;" align="left" valign="bottom"><%=infoMap.get("FLASHPOINT2")%></td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Elemental analysis ; Additives Metals(ppm)</b></td>
+        </tr>
+        <tr>
+            <td colspan="4" align="center">
+                <table width="100%" align="center">
+                    <tr>
+                        <td colspan="2" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Magnesium (Mg)</td>
+                        <td colspan="2" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Calcium (Ca)</td>
+                        <td colspan="2" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Barium (Ba)</td>
+                    </tr>
+                    <tr>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                    </tr>
+                    <tr>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("MGRDE")%></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("MGRFS")%></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("CARDE")%></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("CARFS")%></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("BARDE")%></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("BARFS")%></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Phosphorus (P)</td>
+                        <td colspan="2" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Zinc (Zn)</td>
+                        <td colspan="2" style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                    </tr>
+                    <tr>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                    </tr>
+                    <tr>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("PRDE")%></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("PRFS")%></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("ZNRDE")%></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("ZNRFS")%></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>FT-IR ; Additives Abs)</b></td>
+        </tr>
+        <tr>
+            <td width="200" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Antiwear ASTM</td>
+            <td width="200" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Phenol Antioxidant</td>
+            <td width="200" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Rust Inhibitor(Succinic acid)</td>
+            <td width="200" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Dispersant(Succinimide)</td>
+        </tr>
+        <tr>
+            <td width="200" style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("ANTIWATER")%></td>
+            <td width="200" style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("PHENOL")%></td>
+            <td width="200" style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("RUST")%></td>
+            <td width="200" style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("DISPERSANT")%></td>
+        </tr>
+    </table>
+    
+    <table width="100%" align="center">
+        <tr>
+            <td height="20"></td>
+        </tr>
+    </table>
+    
+    <table id="weartbl" name="weartbl" width="100%" align="center" style="display:;">
+        <tr>
+            <td colspan="4" style="font-size:12px;" align="center"><b>3. Wear 항목</b></td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Elemental analysis ; Wear metals(ppm)</b></td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <table width="100%" align="center">
+                    <tr>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Iron (Fe)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Chrome (Cr)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Lead (Pb)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Copper (Cu)</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("FERDE")%></td>
+                        <td style="font-size:12px; height:20px;:" align="center" valign="bottom"><%=infoMap.get("FERFS")%></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("CRRDE")%></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("CRRFS")%></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("PBRDE")%></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("PBRFS")%></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("CURDE")%></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("CURFS")%></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Tin (Sn)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Aluminum (Al)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Nickel (Ni)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Silver (Ag)</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("SNRDE")%></td>
+                        <td style="font-size:12px; height:20px;:" align="center" valign="bottom"><%=infoMap.get("SNRFS")%></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("ALRDE")%></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("ALRFS")%></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("NIRDE")%></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("NIRFS")%></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("AGRDE")%></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("AGRFS")%></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Molybdenum (Mo)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Titanium (Ti)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Vanadium (V)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("MORDE")%></td>
+                        <td style="font-size:12px; height:20px;:" align="center" valign="bottom"><%=infoMap.get("MORFS")%></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("TIRDE")%></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("TIRFS")%></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("VRDE")%></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><%=infoMap.get("VRFS")%></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Particle Quantifier ; Ferrous Density</b></td>
+        </tr>
+            <td style="font-size:12px; height:20px; background-color: #cccccc;" align="center" valign="bottom">PQ index</td>
+            <td colspan="3"  style="font-size:12px; height:20px;" align="left" valign="bottom"><%=infoMap.get("PQINDEX")%></td>
+        </tr>
+    </table>
+    <table width="100%" align="center">
+        <tr>
+            <td height="20"></td>
+        </tr>
+    </table>
+    <table width="100%" align="center">
+        <tr>
+            <!--td style="font-size:12px; height:30px;" align="center" valign="bottom"><a href="/info/infoWrite.info?idx=<%=idx%>">수정</a></td>
+            <td style="font-size:12px; height:30px;" align="center" valign="bottom"><a href="">삭제</a></td>
+            <td style="font-size:12px; height:30px;" align="center" valign="bottom"><a href="/info/infoList.info">목록</a></td-->
+            <td align="center" style="font-size: 12px"><input name="modify" class="btn_style4" id="modify" type="submit" value="정보수정"/></td>
+            <td align="center" style="font-size: 12px"><input name="delete" class="btn_style4" id="delete" type="submit" value="정보삭제"/></td>
+            <td align="center" style="font-size: 12px"><input name="list" class="btn_style4" id="list" type="submit" value="목록보기"/></td>
+        </tr>
+    </table>
+</body>
+</html>

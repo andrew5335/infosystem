@@ -1,0 +1,647 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org/DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!--  -->
+<sqlMap namespace="Info">
+
+    <select id="getCount" resultClass="java.util.HashMap" parameterClass="java.util.HashMap">
+        SELECT 
+            COUNT(*) AS CNT
+        FROM
+		    SOLGEEVALINFO A
+		JOIN
+		    COMPANY B ON A.COMPANYIDX = B.IDX
+		JOIN
+		    SPECIMEN C ON A.SPECIDX = C.IDX
+		JOIN
+		    SPECISAMPLE D ON A.SAMPLEIDX = D.IDX
+		<isNotEmpty property="companyIdx">
+		    WHERE
+		        B.IDX = #companyIdx#
+		</isNotEmpty>
+    </select>
+
+    <select id="getList" resultClass="java.util.HashMap" parameterClass="java.util.HashMap">
+        SELECT
+			A.IDX AS IDX, B.COMPANYNAME AS COMPANYNAME
+			, C.MACHINENAME AS MACHINENAME, D.SPECINAME AS SAMPLENAME
+			, A.SMPLPOINT AS SMPLPOINT, A.OILTYPE AS OILTYPE
+			, A.AUTHORIZER AS AUTHORIZER, A.REGDATE AS REGDATE
+			, A.URESULT AS RESULT, A.UREPORT AS REPORT
+		FROM
+		    SOLGEEVALINFO A
+		JOIN
+		    COMPANY B ON A.COMPANYIDX = B.IDX
+		JOIN
+		    SPECIMEN C ON A.SPECIDX = C.IDX
+		JOIN
+		    SPECISAMPLE D ON A.SAMPLEIDX = D.IDX
+		ORDER BY
+		    A.IDX DESC
+		<isNotEmpty property="page">
+		    LIMIT #page#, 10
+		</isNotEmpty>
+    </select>
+    
+    <select id="getList2" resultClass="java.util.HashMap" parameterClass="java.util.HashMap">
+        SELECT
+			A.IDX AS IDX, B.COMPANYNAME AS COMPANYNAME
+			, C.MACHINENAME AS MACHINENAME, D.SPECINAME AS SAMPLENAME
+			, A.SMPLPOINT AS SMPLPOINT, A.OILTYPE AS OILTYPE
+			, A.AUTHORIZER AS AUTHORIZER, A.REGDATE AS REGDATE
+			, A.URESULT AS RESULT, A.UREPORT AS REPORT
+		FROM
+		    SOLGEEVALINFO A
+		JOIN
+		    COMPANY B ON A.COMPANYIDX = B.IDX
+		JOIN
+		    SPECIMEN C ON A.SPECIDX = C.IDX
+		JOIN
+		    SPECISAMPLE D ON A.SAMPLEIDX = D.IDX
+		WHERE
+		    B.IDX = #companyIdx#
+		ORDER BY
+		    A.IDX DESC
+		<isNotEmpty property="page">
+		    LIMIT #page#, 10
+		</isNotEmpty>
+    </select>
+    
+    <select id="getList3" resultClass="java.util.HashMap">
+        SELECT
+		    @RNUM:=@RNUM+1 AS ROWNUM, T.*
+		FROM
+		(
+			SELECT
+				A.IDX AS IDX, B.COMPANYNAME AS COMPANYNAME
+				, C.MACHINENAME AS MACHINENAME, D.SPECINAME AS SAMPLENAME
+				, A.SMPLPOINT AS SMPLPOINT, A.OILTYPE AS OILTYPE
+				, A.AUTHORIZER AS AUTHORIZER, A.REGDATE AS REGDATE
+				, A.URESULT AS RESULT, A.UREPORT AS REPORT
+			FROM
+			    SOLGEEVALINFO A
+			JOIN
+			    COMPANY B ON A.COMPANYIDX = B.IDX
+			JOIN
+			    SPECIMEN C ON A.SPECIDX = C.IDX
+			JOIN
+			    SPECISAMPLE D ON A.SAMPLEIDX = D.IDX
+		    ORDER BY A.IDX DESC
+		    LIMIT #start#, 10
+	    )T,
+	    (SELECT @RNUM:=0)R
+    </select>
+    
+    <select id="getInfoFile" parameterClass="java.util.HashMap" resultClass="java.util.HashMap">
+        SELECT
+            URESULT, UREPORT
+        FROM
+            SOLGEEVALINFO
+        WHERE
+            IDX = #idx#
+    </select>
+    
+    <update id="updateReport" parameterClass="java.util.HashMap">
+        UPDATE
+            SOLGEEVALINFO
+        SET
+            UREPORT = #ureport#
+        WHERE
+            IDX = #idx#
+    </update>
+    
+    <update id="updateResult" parameterClass="java.util.HashMap">
+        UPDATE
+            SOLGEEVALINFO
+        SET
+            URESULT = #uresult#
+        WHERE
+            IDX = #idx#
+    </update>
+    
+    <select id="getInfoDetail" resultClass="java.util.HashMap">
+        SELECT
+            A.IDX AS IDX
+            ,ifnull(A.COMPANYIDX, ' ') AS COMPANYIDX
+			,ifnull(B.COMPANYNAME, ' ') AS COMPANYNAME
+			,ifnull(C.MACHINENAME, ' ') AS MACHINENAME
+			,ifnull(D.SPECINAME, ' ') AS SAMPLENAME
+			,ifnull(D.SMPLDATE, ' ') AS SAMPLEDATE
+			,ifnull(A.VRDE                , ' ') as VRDE
+			,ifnull(A.BORONRDE            , ' ') as BORONRDE
+			,ifnull(A.WATERASTM           , ' ') as WATERASTM
+			,ifnull(A.FMAXSIZE            , ' ') as FMAXSIZE
+			,ifnull(A.NAVERAGE            , ' ') as NAVERAGE
+			,ifnull(A.SAMPLEIDX           , ' ') as SAMPLEIDX
+			,ifnull(A.SAE                 , ' ') as SAE
+			,ifnull(A.VISCOSITYINDEX      , ' ') as VISCOSITYINDEX
+			,ifnull(A.RULERNUMBER         , ' ') as RULERNUMBER
+			,ifnull(A.AGRFS               , ' ') as AGRFS
+			,ifnull(A.CURDE               , ' ') as CURDE
+			,ifnull(A.UNONMETALICPARTICLES, ' ') as UNONMETALICPARTICLES
+			,ifnull(A.UPATCHEXT           , ' ') as UPATCHEXT
+			,ifnull(A.ANTIWATER           , ' ') as ANTIWATER
+			,ifnull(A.TIRDE               , ' ') as TIRDE
+			,ifnull(A.ISO2                , ' ') as ISO2
+			,ifnull(A.PQINDEX             , ' ') as PQINDEX
+			,ifnull(A.PRDE                , ' ') as PRDE
+			,ifnull(A.FAVERAGE            , ' ') as FAVERAGE
+			,ifnull(A.UPATCHTEST          , ' ') as UPATCHTEST
+			,ifnull(A.ISO1                , ' ') as ISO1
+			,ifnull(A.SPECIFICGRAVITY     , ' ') as SPECIFICGRAVITY
+			,ifnull(A.EVAL                , ' ') as EVAL
+			,ifnull(A.FCOUNT              , ' ') as FCOUNT
+			,ifnull(A.TWENTYFIVE          , ' ') as TWENTYFIVE
+			,ifnull(A.SNRFS               , ' ') as SNRFS
+			,ifnull(A.RUL1PEAK            , ' ') as RUL1PEAK
+			,ifnull(A.CRRDE               , ' ') as CRRDE
+			,ifnull(A.PBRFS               , ' ') as PBRFS
+			,ifnull(A.FIVE                , ' ') as FIVE
+			,ifnull(A.DETERGENT           , ' ') as DETERGENT
+			,ifnull(A.RULAREATOTAL        , ' ') as RULAREATOTAL
+			,ifnull(A.FSTD                , ' ') as FSTD
+			,ifnull(A.MPCVAL              , ' ') as MPCVAL
+			,ifnull(A.FLASHPOINT2         , ' ') as FLASHPOINT2
+			,ifnull(A.CMAXSIZE            , ' ') as CMAXSIZE
+			,ifnull(A.FERFS               , ' ') as FERFS
+			,ifnull(A.FIFTEEN             , ' ') as FIFTEEN
+			,ifnull(A.AUTHORIZER          , ' ') as AUTHORIZER
+			,ifnull(A.P14UM               , ' ') as P14UM
+			,ifnull(A.BORONRFS            , ' ') as BORONRFS
+			,ifnull(A.CARFS               , ' ') as CARFS
+			,ifnull(A.NAS2                , ' ') as NAS2
+			,ifnull(A.SILICONRFS          , ' ') as SILICONRFS
+			,ifnull(A.PRFS                , ' ') as PRFS
+			,ifnull(A.TENDENCY            , ' ') as TENDENCY
+			,ifnull(A.MPCWEIGHT           , ' ') as MPCWEIGHT
+			,ifnull(A.VISCOSITY40         , ' ') as VISCOSITY40
+			,ifnull(A.ZNRDE               , ' ') as ZNRDE
+			,ifnull(A.AGRDE               , ' ') as AGRDE
+			,ifnull(A.HUNDRED             , ' ') as HUNDRED
+			,ifnull(A.ALRDE               , ' ') as ALRDE
+			,ifnull(A.WATER               , ' ') as WATER
+			,ifnull(A.CAVERAGE            , ' ') as CAVERAGE
+			,ifnull(A.SOOTLOADING         , ' ') as SOOTLOADING
+			,ifnull(A.UFIBER              , ' ') as UFIBER
+			,ifnull(A.CRRFS               , ' ') as CRRFS
+			,ifnull(A.OXIDATION           , ' ') as OXIDATION
+			,ifnull(A.NIRDE               , ' ') as NIRDE
+			,ifnull(A.NSTD                , ' ') as NSTD
+			,ifnull(A.USEVERESLIDINGWEAR  , ' ') as USEVERESLIDINGWEAR
+			,ifnull(A.UPARTICLEINFO5      , ' ') as UPARTICLEINFO5
+			,ifnull(A.UPARTICLEINFO4      , ' ') as UPARTICLEINFO4
+			,ifnull(A.UPARTICLEINFO3      , ' ') as UPARTICLEINFO3
+			,ifnull(A.FLASHPOINT          , ' ') as FLASHPOINT
+			,ifnull(A.UPARTICLEINFO2      , ' ') as UPARTICLEINFO2
+			,ifnull(A.UPARTICLEINFO1      , ' ') as UPARTICLEINFO1
+			,ifnull(A.P21UM               , ' ') as P21UM
+			,ifnull(A.COMPANYIDX          , ' ') as COMPANYIDX
+			,ifnull(A.P6UM                , ' ') as P6UM
+			,ifnull(A.NCOUNT              , ' ') as NCOUNT
+			,ifnull(A.NIRFS               , ' ') as NIRFS
+			,ifnull(A.SMPLPOINT           , ' ') as SMPLPOINT
+			,ifnull(A.P4UM                , ' ') as P4UM
+			,ifnull(A.ETHYLENE            , ' ') as ETHYLENE
+			,ifnull(A.UWATER              , ' ') as UWATER
+			,ifnull(A.WATERSEPARABILITY   , ' ') as WATERSEPARABILITY
+			,ifnull(A.SNRDE               , ' ') as SNRDE
+			,ifnull(A.ACIDNUMBER          , ' ') as ACIDNUMBER
+			,ifnull(A.SODIUMRDE           , ' ') as SODIUMRDE
+			,ifnull(A.UMEMBRANEPATCHIMG5  , ' ') as UMEMBRANEPATCHIMG5
+			,ifnull(A.UMEMBRANEPATCHIMG6  , ' ') as UMEMBRANEPATCHIMG6
+			,ifnull(A.UMEMBRANEPATCHIMG3  , ' ') as UMEMBRANEPATCHIMG3
+			,ifnull(A.P70UM               , ' ') as P70UM
+			,ifnull(A.UMEMBRANEPATCHIMG4  , ' ') as UMEMBRANEPATCHIMG4
+			,ifnull(A.`CONDITION`         , ' ') as `CONDITION`
+			,ifnull(A.NMAXSIZE            , ' ') as NMAXSIZE
+			,ifnull(A.MGRFS               , ' ') as MGRFS
+			,ifnull(A.MORFS               , ' ') as MORFS
+			,ifnull(A.SAVERAGE            , ' ') as SAVERAGE
+			,ifnull(A.CARDE               , ' ') as CARDE
+			,ifnull(A.CCOUNT              , ' ') as CCOUNT
+			,ifnull(A.ALRFS               , ' ') as ALRFS
+			,ifnull(A.CSTD                , ' ') as CSTD
+			,ifnull(A.NITRATION           , ' ') as NITRATION
+			,ifnull(A.IMPCVAL             , ' ') as IMPCVAL
+			,ifnull(A.USLUDGE             , ' ') as USLUDGE
+			,ifnull(A.SULFATE             , ' ') as SULFATE
+			,ifnull(A.UMEMBRANEPATCHIMG2  , ' ') as UMEMBRANEPATCHIMG2
+			,ifnull(A.FERDE               , ' ') as FERDE
+			,ifnull(A.UMEMBRANEPATCHIMG1  , ' ') as UMEMBRANEPATCHIMG1
+			,ifnull(A.VRFS                , ' ') as VRFS
+			,ifnull(A.UBLOTTER            , ' ') as UBLOTTER
+			,ifnull(A.UCUTTINGWEAR        , ' ') as UCUTTINGWEAR
+			,ifnull(A.PHENOL              , ' ') as PHENOL
+			,ifnull(A.DISPERSANT          , ' ') as DISPERSANT
+			,ifnull(A.SSTD                , ' ') as SSTD
+			,ifnull(A.VISCOSITY100        , ' ') as VISCOSITY100
+			,ifnull(A.STABILITY           , ' ') as STABILITY
+			,ifnull(A.SPECIDX             , ' ') as SPECIDX
+			,ifnull(A.UPATCH              , ' ') as UPATCH
+			,ifnull(A.P38UM               , ' ') as P38UM
+			,ifnull(A.MGRDE               , ' ') as MGRDE
+			,ifnull(A.SMAXSIZE            , ' ') as SMAXSIZE
+			,ifnull(A.BARFS               , ' ') as BARFS
+			,ifnull(A.TIRFS               , ' ') as TIRFS
+			,ifnull(A.UFATIGUEWEAR        , ' ') as UFATIGUEWEAR
+			,ifnull(A.RUST                , ' ') as RUST
+			,ifnull(A.SAE2                , ' ') as SAE2
+			,ifnull(A.CURFS               , ' ') as CURFS
+			,ifnull(A.CHLORINE            , ' ') as CHLORINE
+			,ifnull(A.MORDE               , ' ') as MORDE
+			,ifnull(A.SODIUMRFS           , ' ') as SODIUMRFS
+			,ifnull(A.BARDE               , ' ') as BARDE
+			,ifnull(A.SCOUNT              , ' ') as SCOUNT
+			,ifnull(A.URULER2             , ' ') as URULER2
+			,ifnull(A.URULER1             , ' ') as URULER1
+			,ifnull(A.OILTYPE             , ' ') as OILTYPE
+			,ifnull(A.ZNRFS               , ' ') as ZNRFS
+			,ifnull(A.DIESEL              , ' ') as DIESEL
+			,ifnull(A.SILICONRDE          , ' ') as SILICONRDE
+			,ifnull(A.PBRDE               , ' ') as PBRDE
+			,ifnull(A.RUL2PEAK            , ' ') as RUL2PEAK
+			,ifnull(A.NAS                 , ' ') as NAS
+			,ifnull(A.WEAR                , ' ') as WEAR
+			,ifnull(A.CONTAMINATION       , ' ') as CONTAMINATION
+			,ifnull(A.FIFTY               , ' ') as FIFTY
+			,ifnull(A.NIL                 , ' ') as NIL
+			,ifnull(A.POURPOINT           , ' ') as POURPOINT
+			,ifnull(A.REGDATE             , ' ') as REGDATE
+			,ifnull(A.REGISTER            , ' ') as REGISTER
+			,ifnull(A.BASENUMBER, ' ') AS BASENUMBER
+			,ifnull(A.POTASSIUM, ' ') AS POTASSIUM
+			,ifnull(A.MANGANESE, ' ') AS MANGANESE
+			,ifnull(A.DROPPOINT, ' ') AS DROPPOINT
+			,ifnull(A.PENETRATION, ' ') AS PENETRATION
+			,ifnull(A.OILSEPARATION, ' ') AS OILSEPARATION
+			,ifnull(A.ABS1, ' ') AS ABS1
+			,ifnull(A.ABS2, ' ') AS ABS2
+			,ifnull(A.ABS3, ' ') AS ABS3
+			,ifnull(A.ABS4, ' ') AS ABS4
+			,ifnull(A.ABS5, ' ') AS ABS5
+			,ifnull(A.ABS6, ' ') AS ABS6
+			,ifnull(A.ABS7, ' ') AS ABS7
+			,ifnull(A.ABS8, ' ') AS ABS8
+			,ifnull(A.ABS9, ' ') AS ABS9
+			,ifnull(A.ABS10, ' ') AS ABS10
+			,ifnull(A.ABS11, ' ') AS ABS11
+			,ifnull(A.ABS12, ' ') AS ABS12
+			,ifnull(A.ABS13, ' ') AS ABS13
+			,ifnull(A.ABS14, ' ') AS ABS14
+			,ifnull(A.COABS1, ' ') AS COABS1
+			,ifnull(A.COABS2, ' ') AS COABS2
+			,ifnull(A.COABS3, ' ') AS COABS3
+			,ifnull(A.COABS4, ' ') AS COABS4
+			,ifnull(A.COABS5, ' ') AS COABS5
+			,ifnull(A.COABS6, ' ') AS COABS6
+			,ifnull(A.COABS7, ' ') AS COABS7
+			,ifnull(A.COABS8, ' ') AS COABS8
+			,ifnull(A.COABS9, ' ') AS COABS9
+			,ifnull(A.COABS10, ' ') AS COABS10
+			,ifnull(A.COABS11, ' ') AS COABS11
+			,ifnull(A.COABS12, ' ') AS COABS12
+			,ifnull(A.COABS13, ' ') AS COABS13
+			,ifnull(A.COABS14, ' ') AS COABS14
+			,ifnull(A.COABS15, ' ') AS COABS15
+			,ifnull(A.UINSOLUBLE, ' ') AS INSOLUBLE
+			,ifnull(A.ADDFIELD, ' ' ) AS ADDFIELD
+			,ifnull(A.ADDFIELDCON, ' ') AS ADDFIELDCON
+		FROM
+		    SOLGEEVALINFO A
+		JOIN
+		    COMPANY B ON A.COMPANYIDX = B.IDX
+		JOIN
+		    SPECIMEN C ON A.SPECIDX = C.IDX
+		JOIN
+		    SPECISAMPLE D ON A.SAMPLEIDX = D.IDX
+		WHERE
+		    A.IDX = #idx#
+    </select>
+    
+    <select id="getSmplPoint" resultClass="java.lang.String">
+        SELECT SMPLPOINT FROM SPECISAMPLE WHERE IDX = #smplIdx#
+    </select>
+    
+    <select id="getSmplDate" resultClass="java.lang.String">
+        SELECT SMPLDATE FROM SPECISAMPLE WHERE IDX = #smplIdx#
+    </select>
+    
+    <insert id="insertSolgeInfo" parameterClass="java.util.HashMap">
+        INSERT INTO
+            SOLGEEVALINFO
+            (
+                VRDE,BORONRDE,WATERASTM,FMAXSIZE,NAVERAGE,SAMPLEIDX,SAE,VISCOSITYINDEX,RULERNUMBER,AGRFS,CURDE,UNONMETALICPARTICLES
+                ,UPATCHEXT,ANTIWATER,TIRDE,ISO2,PQINDEX,PRDE,FAVERAGE,UPATCHTEST,ISO1,SPECIFICGRAVITY,EVAL,FCOUNT,twentyfive,SNRFS,RUL1PEAK
+                ,CRRDE,PBRFS,five,DETERGENT,RULAREATOTAL,FSTD,MPCVAL,FLASHPOINT2,CMAXSIZE,FERFS,fifteen,AUTHORIZER,P14UM,BORONRFS,CARFS,NAS2,SILICONRFS
+                ,PRFS,TENDENCY,MPCWEIGHT,VISCOSITY40,ZNRDE,AGRDE,hundred,ALRDE,WATER,CAVERAGE,SOOTLOADING,UFIBER,CRRFS,OXIDATION,NIRDE,NSTD
+                ,USEVERESLIDINGWEAR,UPARTICLEINFO5,UPARTICLEINFO4,UPARTICLEINFO3,FLASHPOINT,UPARTICLEINFO2,UPARTICLEINFO1,P21UM,COMPANYIDX,P6UM
+                ,NCOUNT,NIRFS,SMPLPOINT,P4UM,ETHYLENE,UWATER,WATERSEPARABILITY,SNRDE,ACIDNUMBER,SODIUMRDE,UMEMBRANEPATCHIMG5
+                ,UMEMBRANEPATCHIMG6,UMEMBRANEPATCHIMG3,P70UM,UMEMBRANEPATCHIMG4,`CONDITION`,NMAXSIZE,MGRFS,MORFS,SAVERAGE,CARDE,CCOUNT,ALRFS,CSTD
+				,NITRATION,IMPCVAL,USLUDGE,SULFATE,UMEMBRANEPATCHIMG2,FERDE,UMEMBRANEPATCHIMG1,VRFS,UBLOTTER,UCUTTINGWEAR,PHENOL,DISPERSANT,SSTD
+				,VISCOSITY100,STABILITY,SPECIDX,UPATCH,P38UM,MGRDE,SMAXSIZE,BARFS,TIRFS,UFATIGUEWEAR,RUST,SAE2,CURFS,CHLORINE,MORDE,SODIUMRFS,BARDE,SCOUNT
+				,URULER2,URULER1,OILTYPE,ZNRFS,DIESEL,SILICONRDE,PBRDE,RUL2PEAK,NAS,WEAR,CONTAMINATION,fifty,NIL,POURPOINT,REGDATE,REGISTER
+				,BASENUMBER,POTASSIUM,MANGANESE,DROPPOINT,PENETRATION,OILSEPARATION
+				,ABS1,ABS2,ABS3,ABS4,ABS5,ABS6,ABS7,ABS8,ABS9,ABS10,ABS11,ABS12,ABS13,ABS14
+				,COABS1,COABS2,COABS3,COABS4,COABS5,COABS6,COABS7,COABS8,COABS9,COABS10,COABS11,COABS12,COABS13,COABS14,COABS15,UINSOLUBLE
+				,ADDFIELD, ADDFIELDCON
+            )
+            VALUES
+            (
+            	#vrde#,#boronrde#,#waterastm#,#fmaxsize#,#naverage#,#sampleIdx#,#sae#,#viscosityindex#,#rulernumber#,#agrfs#,#curde#,#unonmetalicparticles#,#uPatchExt#
+            	,#antiwater#,#tirde#,#iso2#,#pqindex#,#prde#,#faverage#,#uPatchTest#,#iso#,#specificgravity#,#eval#,#fcount#,#25#,#snrfs#,#rul1peak#,#crrde#,#pbrfs#
+            	,#5#,#detergent#,#rulareatotal#,#fstd#,#mpcval#,#flashpoint2#,#cmaxsize#,#ferfs#,#15#,#authorizer#,#p14um#,#boronrfs#,#carfs#,#nas2#,#siliconrfs#,#prfs#,#tendency#
+            	,#mpcweight#,#viscosity40#,#znrde#,#agrde#,#100#,#alrde#,#water#,#caverage#,#sootloading#,#ufiber#,#crrfs#,#oxidation#,#nirde#,#nstd#,#usevereSlidingWear#
+            	,#uParticleInfo5#,#uParticleInfo4#,#uParticleInfo3#,#flashpoint#,#uParticleInfo2#,#uParticleInfo1#,#p21um#,#companyIdx#,#p6um#,#ncount#,#nirfs#,#smplpoint#
+            	,#p4um#,#ethylene#,#uwater#,#waterseparability#,#snrde#,#acidnumber#,#sodiumrde#,#uMembranePatchImg5#,#uMembranePatchImg6#,#uMembranePatchImg3#,#p70um#
+            	,#uMembranePatchImg4#,#condition#,#nmaxsize#,#mgrfs#,#morfs#,#saverage#,#carde#,#ccount#,#alrfs#,#cstd#,#nitration#,#impcval#,#uSludge#,#sulfate#,#uMembranePatchImg2#
+            	,#ferde#,#uMembranePatchImg1#,#vrfs#,#uBlotter#,#ucuttingWear#,#phenol#,#dispersant#,#sstd#,#viscosity100#,#stability#,#specIdx#,#uPatch#,#p38um#,#mgrde#,#smaxsize#
+            	,#barfs#,#tirfs#,#ufatigueWear#,#rust#,#sae2#,#curfs#,#chlorine#,#morde#,#sodiumrfs#,#barde#,#scount#,#uRuler2#,#uRuler1#,#oilType#,#znrfs#,#diesel#,#siliconrde#
+            	,#pbrde#,#rul2peak#,#nas#,#wear#,#contamination#,#50#,#nil#,#pourpoint#,#regDate#,#register#
+            	,#basenumber#,#potassiumrde#,#manganese#,#droppoint#,#penetration#,#oilseparation#
+				,#abs1#,#abs2#,#abs3#,#abs4#,#abs5#,#abs6#,#abs7#,#abs8#,#abs9#,#abs10#,#abs11#,#abs12#,#abs13#,#abs14#
+				,#coabs1#,#coabs2#,#coabs3#,#coabs4#,#coabs5#,#coabs6#,#coabs7#,#coabs8#,#coabs9#,#coabs10#,#coabs11#,#coabs12#,#coabs13#,#coabs14#,#coabs15#,#uInsoluble#
+				,#addField#,#content#
+            )
+    </insert>
+    
+    <update id="updateSolgeInfo" parameterClass="java.util.HashMap">
+        UPDATE
+            SOLGEEVALINFO
+        SET
+            VRDE                 = #vrde#                
+			,BORONRDE             = #boronrde#            
+			,WATERASTM            = #waterastm#           
+			,FMAXSIZE             = #fmaxsize#            
+			,NAVERAGE             = #naverage#            
+			,SAMPLEIDX            = #sampleIdx#           
+			,SAE                  = #sae#                 
+			,VISCOSITYINDEX       = #viscosityindex#      
+			,RULERNUMBER          = #rulernumber#         
+			,AGRFS                = #agrfs#               
+			,CURDE                = #curde#               
+			,UNONMETALICPARTICLES = #unonmetalicparticles#
+			,UPATCHEXT            = #uPatchExt#           
+			,ANTIWATER            = #antiwater#           
+			,TIRDE                = #tirde#               
+			,ISO2                 = #iso2#                
+			,PQINDEX              = #pqindex#             
+			,PRDE                 = #prde#                
+			,FAVERAGE             = #faverage#            
+			,UPATCHTEST           = #uPatchTest#          
+			,ISO1                 = #iso#                 
+			,SPECIFICGRAVITY      = #specificgravity#     
+			,EVAL                 = #eval#                
+			,FCOUNT               = #fcount#              
+			,twentyfive           = #25#                  
+			,SNRFS                = #snrfs#               
+			,RUL1PEAK             = #rul1peak#            
+			,CRRDE                = #crrde#               
+			,PBRFS                = #pbrfs#               
+			,five                 = #5#                   
+			,DETERGENT            = #detergent#           
+			,RULAREATOTAL         = #rulareatotal#        
+			,FSTD                 = #fstd#                
+			,MPCVAL               = #mpcval#              
+			,FLASHPOINT2          = #flashpoint2#         
+			,CMAXSIZE             = #cmaxsize#            
+			,FERFS                = #ferfs#               
+			,fifteen              = #15#                  
+			,AUTHORIZER           = #authorizer#          
+			,P14UM                = #p14um#               
+			,BORONRFS             = #boronrfs#            
+			,CARFS                = #carfs#               
+			,NAS2                 = #nas2#                
+			,SILICONRFS           = #siliconrfs#          
+			,PRFS                 = #prfs#                
+			,TENDENCY             = #tendency#            
+			,MPCWEIGHT            = #mpcweight#           
+			,VISCOSITY40          = #viscosity40#         
+			,ZNRDE                = #znrde#               
+			,AGRDE                = #agrde#               
+			,hundred              = #100#                 
+			,ALRDE                = #alrde#               
+			,WATER                = #water#               
+			,CAVERAGE             = #caverage#            
+			,SOOTLOADING          = #sootloading#         
+			,UFIBER               = #ufiber#              
+			,CRRFS                = #crrfs#               
+			,OXIDATION            = #oxidation#           
+			,NIRDE                = #nirde#               
+			,NSTD                 = #nstd#                
+			,USEVERESLIDINGWEAR   = #usevereSlidingWear#  
+			,UPARTICLEINFO5       = #uParticleInfo5#      
+			,UPARTICLEINFO4       = #uParticleInfo4#      
+			,UPARTICLEINFO3       = #uParticleInfo3#      
+			,FLASHPOINT           = #flashpoint#          
+			,UPARTICLEINFO2       = #uParticleInfo2#      
+			,UPARTICLEINFO1       = #uParticleInfo1#      
+			,P21UM                = #p21um#               
+			,COMPANYIDX           = #companyIdx#          
+			,P6UM                 = #p6um#                
+			,NCOUNT               = #ncount#              
+			,NIRFS                = #nirfs#               
+			,SMPLPOINT            = #smplpoint#           
+			,P4UM                 = #p4um#                
+			,ETHYLENE             = #ethylene#            
+			,UWATER               = #uwater#              
+			,WATERSEPARABILITY    = #waterseparability#   
+			,SNRDE                = #snrde#               
+			,ACIDNUMBER           = #acidnumber#          
+			,SODIUMRDE            = #sodiumrde#           
+			,UMEMBRANEPATCHIMG5   = #uMembranePatchImg5#  
+			,UMEMBRANEPATCHIMG6   = #uMembranePatchImg6#  
+			,UMEMBRANEPATCHIMG3   = #uMembranePatchImg3#  
+			,P70UM                = #p70um#               
+			,UMEMBRANEPATCHIMG4   = #uMembranePatchImg4#  
+			,`CONDITION`          = #condition#           
+			,NMAXSIZE             = #nmaxsize#            
+			,MGRFS                = #mgrfs#               
+			,MORFS                = #morfs#               
+			,SAVERAGE             = #saverage#            
+			,CARDE                = #carde#               
+			,CCOUNT               = #ccount#              
+			,ALRFS                = #alrfs#               
+			,CSTD                 = #cstd#                
+			,NITRATION            = #nitration#           
+			,IMPCVAL              = #impcval#             
+			,USLUDGE              = #uSludge#             
+			,SULFATE              = #sulfate#             
+			,UMEMBRANEPATCHIMG2   = #uMembranePatchImg2#  
+			,FERDE                = #ferde#               
+			,UMEMBRANEPATCHIMG1   = #uMembranePatchImg1#  
+			,VRFS                 = #vrfs#                
+			,UBLOTTER             = #uBlotter#            
+			,UCUTTINGWEAR         = #ucuttingWear#        
+			,PHENOL               = #phenol#              
+			,DISPERSANT           = #dispersant#          
+			,SSTD                 = #sstd#                
+			,VISCOSITY100         = #viscosity100#        
+			,STABILITY            = #stability#           
+			,SPECIDX              = #specIdx#             
+			,UPATCH               = #uPatch#              
+			,P38UM                = #p38um#               
+			,MGRDE                = #mgrde#               
+			,SMAXSIZE             = #smaxsize#            
+			,BARFS                = #barfs#               
+			,TIRFS                = #tirfs#               
+			,UFATIGUEWEAR         = #ufatigueWear#        
+			,RUST                 = #rust#                
+			,SAE2                 = #sae2#                
+			,CURFS                = #curfs#               
+			,CHLORINE             = #chlorine#            
+			,MORDE                = #morde#               
+			,SODIUMRFS            = #sodiumrfs#           
+			,BARDE                = #barde#               
+			,SCOUNT               = #scount#              
+			,URULER2              = #uRuler2#             
+			,URULER1              = #uRuler1#             
+			,OILTYPE              = #oilType#             
+			,ZNRFS                = #znrfs#               
+			,DIESEL               = #diesel#              
+			,SILICONRDE           = #siliconrde#          
+			,PBRDE                = #pbrde#               
+			,RUL2PEAK             = #rul2peak#            
+			,NAS                  = #nas#                 
+			,WEAR                 = #wear#                
+			,CONTAMINATION        = #contamination#       
+			,fifty                = #50#                  
+			,NIL                  = #nil#                 
+			,POURPOINT            = #pourpoint#           
+			,REGDATE              = #regDate#             
+			,REGISTER             = #register#
+			,BASENUMBER = #basenumber#
+			,POTASSIUM = #potassiumrde#
+			,MANGANESE = #manganese#
+			,DROPPOINT = #droppoint#
+			,PENETRATION = #penetration#
+			,OILSEPARATION = #oilseparation#	
+			,ABS1 = #abs1#
+			,ABS2 = #abs2#
+			,ABS3 = #abs3#
+			,ABS4 = #abs4#
+			,ABS5 = #abs5#
+			,ABS6 = #abs6#
+			,ABS7 = #abs7#
+			,ABS8 = #abs8#
+			,ABS9 = #abs9#
+			,ABS10 = #abs10#
+			,ABS11 = #abs11#
+			,ABS12 = #abs12#
+			,ABS13 = #abs13#
+			,ABS14 = #abs14#
+			,COABS1 = #coabs1#
+			,COABS2 = #coabs2#
+			,COABS3 = #coabs3#
+			,COABS4 = #coabs4#
+			,COABS5 = #coabs5#
+			,COABS6 = #coabs6#
+			,COABS7 = #coabs7#
+			,COABS8 = #coabs8#
+			,COABS9 = #coabs9#
+			,COABS10 = #coabs10#
+			,COABS11 = #coabs11#
+			,COABS12 = #coabs12#
+			,COABS13 = #coabs13#
+			,COABS14 = #coabs14#
+			,COABS15 = #coabs15#
+			,UINSOLUBLE = #uInsoluble#
+			,ADDFIELD = #addField#
+			,ADDFIELDCON = #content#
+		WHERE
+		    IDX = #idx#          
+    </update>
+    
+    <delete id="deleteInfo" parameterClass="java.lang.Integer">
+        DELETE FROM
+            SOLGEEVALINFO
+        WHERE
+            IDX = #idx#
+    </delete>
+    
+    <select id="getAnalysisList" parameterClass="java.util.HashMap" resultClass="java.util.HashMap" remapResults="true">
+        SELECT
+            $colName$
+            , A.REGDATE AS regdate
+            , A.ISO1 AS iso1
+            , A.ISO2 AS iso2
+            , A.NAS AS nas1
+            , A.NAS2 AS nas2
+            , A.SAE AS sae1
+            , A.SAE2 AS sae2
+            ,ifnull(A.UNONMETALICPARTICLES, '') as UNONMETALICPARTICLES
+			,ifnull(A.UPATCHEXT           , '') as UPATCHEXT
+			,ifnull(A.UPATCHTEST          , '') as UPATCHTEST
+			,ifnull(A.UFIBER              , '') as UFIBER
+			,ifnull(A.USEVERESLIDINGWEAR  , '') as USEVERESLIDINGWEAR
+			,ifnull(A.UPARTICLEINFO5      , '') as UPARTICLEINFO5
+			,ifnull(A.UPARTICLEINFO4      , '') as UPARTICLEINFO4
+			,ifnull(A.UPARTICLEINFO3      , '') as UPARTICLEINFO3
+			,ifnull(A.UPARTICLEINFO2      , '') as UPARTICLEINFO2
+			,ifnull(A.UPARTICLEINFO1      , '') as UPARTICLEINFO1
+			,ifnull(A.UMEMBRANEPATCHIMG5  , '') as UMEMBRANEPATCHIMG5
+			,ifnull(A.UMEMBRANEPATCHIMG6  , '') as UMEMBRANEPATCHIMG6
+			,ifnull(A.UMEMBRANEPATCHIMG3  , '') as UMEMBRANEPATCHIMG3
+			,ifnull(A.UMEMBRANEPATCHIMG4  , '') as UMEMBRANEPATCHIMG4
+			,ifnull(A.UMEMBRANEPATCHIMG2  , '') as UMEMBRANEPATCHIMG2
+			,ifnull(A.UMEMBRANEPATCHIMG1  , '') as UMEMBRANEPATCHIMG1
+			,ifnull(A.UBLOTTER            , '') as UBLOTTER
+			,ifnull(A.UCUTTINGWEAR        , '') as UCUTTINGWEAR
+			,ifnull(A.UPATCH              , '') as UPATCH
+			,ifnull(A.UFATIGUEWEAR        , '') as UFATIGUEWEAR
+			,ifnull(A.URULER2             , '') as URULER2
+			,ifnull(A.URULER1             , '') as URULER1
+			,ifnull(A.USLUDGE             , '') as USLUDGE
+			,ifnull(A.UWATER              , '') as UWATER
+			,ifnull(A.ADDFIELD             , '') AS ADDFIELD
+			,ifnull(A.ADDFIELDCON       , '') AS ADDFIELDCON 
+        FROM
+		    SOLGEEVALINFO A
+			JOIN
+			    COMPANY B ON A.COMPANYIDX = B.IDX
+			JOIN
+			    SPECIMEN C ON A.SPECIDX = C.IDX
+			JOIN
+			    SPECISAMPLE D ON A.SAMPLEIDX = D.IDX
+        WHERE
+            1 = 1
+	            <isNotEmpty property="companyIdx">
+	                AND B.IDX = #companyIdx#
+	            </isNotEmpty>
+	            <isNotEmpty property="specIdx">
+	                AND C.IDX = #specIdx#
+	            </isNotEmpty>
+	            <isNotEmpty property="sampleIdx">
+	                AND D.IDX = #sampleIdx#
+	            </isNotEmpty>
+                <isNotEmpty property="startDate">
+                    AND A.REGDATE <![CDATA[>]]>= #startDate#
+                </isNotEmpty>
+                <isNotEmpty property="endDate">
+                    AND A.REGDATE <![CDATA[<]]>= #endDate#
+                </isNotEmpty>
+            ORDER BY
+                A.REGDATE ASC
+    </select>
+    
+    <select id="getColumnName" resultClass="java.util.HashMap">
+		SELECT 
+			TABLE_NAME, COLUMN_NAME, COLUMN_COMMENT 
+		FROM 
+			INFORMATION_SCHEMA.COLUMNS 
+		WHERE 
+			TABLE_SCHEMA = 'solgeinfo'
+		AND 
+			TABLE_NAME = 'solgeevalinfo'
+    </select>
+    
+    <select id="getColName" resultClass="java.lang.String">
+        SELECT 
+			COLUMN_NAME
+		FROM 
+			INFORMATION_SCHEMA.COLUMNS 
+		WHERE 
+			TABLE_SCHEMA = 'solgeinfo'
+		AND 
+			TABLE_NAME = 'solgeevalinfo'
+    </select>
+
+</sqlMap>

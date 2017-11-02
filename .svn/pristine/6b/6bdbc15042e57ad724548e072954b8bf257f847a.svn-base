@@ -1,0 +1,108 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page import="java.util.*" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>WearCheck OilTalk Report</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link type="text/css" rel="stylesheet" href="/css/base.css"/>
+	<script type="text/javascript" src="/js/jquery/jquery-1.10.2.min.js"></script>
+	<script type="text/javascript">
+		function popup_window(url, name, left, top, width, height, toolbar, menubar, statusbar, scrollbar, resizable, location) {
+		   toolbar_str = toolbar ? 'yes' : 'no';
+		   menubar_str = menubar ? 'yes' : 'no';
+		   statusbar_str = statusbar ? 'yes' : 'no';
+		   scrollbar_str = scrollbar ? 'yes' : 'no';
+		   resizable_str = resizable ? 'yes' : 'no';
+		   location_str = location ? 'yes' : 'no';
+
+		   var mdWindow = window.open(url, name, 'left='+left+',top='+top+',width='+width+',height='+height+',toolbar='+toolbar_str +',menubar='+menubar_str+',status='+statusbar_str+',scrollbars='+scrollbar_str +',resizable='+resizable_str+',location='+location_str);
+		   
+		   if(!mdWindow){
+		       alert("팝업차단을 해제해주세요.");
+		       return;
+		   }
+		   
+		   mdWindow.focus();
+		   return mdWindow;
+		}
+		
+		$(document).ready(function() {
+			$("#txt_username").focus();
+			
+			$("#joinBtn").click(function() {				
+				//location.href = "/login/register.info";
+				//popup_window('/login/register.info', '회원가입', '','','400px', '600px', 'no', 'no', 'no', 'yes', 'no', 'no');
+				window.open("/login/register.info", "회원가입", "width=400px, height=450px");
+				return false;
+			});
+			
+			$("#loginForm").submit(function() {
+				if( $.trim($("#userId").val()) == "" ) {
+					alert("아이디를 입력하세요.");
+					$("#userId").focus();
+					return false;
+				}
+				
+				if( $.trim($("#password").val()) == "" ) {
+					alert("비밀번호를 입력하세요.");
+					$("#password").focus();
+					return false;
+				}
+			});
+
+		});
+	</script>
+</head>
+<body>
+	<div class="loginWrapper">
+	    <table width="100%" cellpadding="0" cellspacing="0" border="0" align="center">
+	        <tr>
+	            <td width="40%" align="left">
+	                <h2><img src="/images/wearcheck_logo2.png" width="336" alt="OilTalk Report System"/></h2>
+	            </td>
+	        </tr>
+	    </table>
+		<div class="loginBox">		
+			<form method="post" action="/login/loginProcess.info" id="loginForm">
+			<div class="login_window">
+				<ul>
+					<li><img src="/images/loginbox_id.gif" /><input type="text" name="userId" id="userId"/></li>
+					<li><img src="/images/loginbox_pw.gif" /><input type="password" name="password" id="password"/></li>
+				</ul>
+				<div class="login_btn" >
+					<input type="image" src="/images/loginbox_btn_login.gif" alt="로그인"/>
+				</div>
+			</div>
+			</form>
+		</div>
+		
+		<div class="login_info">
+			<ul>
+				<li>· OilTalk Report System 로그인을 위해서는 회원가입을 하셔야 합니다. </li>
+<!-- 				<li><br/><br/><br/></li> -->
+			    <li>
+		            <p align="center"><img src="/images/solge_login_logo.jpg" width="151" alt="Solge" />&nbsp;&nbsp;<font style="font-size: 12px; color: #000000"><b>A proud member of Wearcheck International</b></font></p>
+		        </li>
+				<li class="end"></li>
+				<!--li>· 아이디는 계정 설정시 등록한 이메일 주소 입니다. <br />
+				· 아이디를 잊으셨다면, 아이디 찾기를 진행해 주세요.</li>
+				<li class="end">· 아이디를 알고 계신 경우에, 신규 비밀번호를 설정합니다.</li-->
+			</ul>
+			
+			<div class="btn01" >
+			    <img src="blank.gif" width="1" height="40">
+			    <input type="image" id="joinBtn" src="/images/loginbox_btn01.gif" alt="회원가입"/>
+			</div>
+			   
+<!-- 			<div class="btn02" > -->
+<!-- 				<input type="image" id="findAccountBtn" src="/images/loginbox_btn02.gif" alt="아이디찾기"/> -->
+<!-- 			</div> -->
+<!-- 			<div class="btn03" > -->
+<!-- 				<input type="image" id="findPasswordBtn" src="/images/loginbox_btn03.gif" alt="비밀번호찾기"/> -->
+<!-- 			</div> -->
+		</div>
+		<div class="login_footer"><img src="/images/copyright.gif" alt="COPYRIGHTⓒ2014 Wearcheck CO. LTD ALL RIGHT RESERVED." /></div>
+	</div>
+</body>
+</html>

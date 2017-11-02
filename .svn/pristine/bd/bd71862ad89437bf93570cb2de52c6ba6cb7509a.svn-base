@@ -1,0 +1,458 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="java.util.Map" %>  
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>OilTalk Report System</title>
+<%
+	List<Map> analysisList = (List)request.getAttribute("analysisList");
+	String tmpcolspan = request.getAttribute("colspan").toString();
+	String searchCol = request.getAttribute("searchCol").toString();
+	String[] searchColVal = searchCol.split(",");
+	String startDate = (String)request.getAttribute("startDate");
+	String endDate = (String)request.getAttribute("endDate");
+	int colspan = searchColVal.length;
+	Map resultMap = (Map)request.getAttribute("resultMap");
+	
+	if(resultMap != null) {
+		Object[] dateval = (Object[])resultMap.get("regdate2");
+		for(int i=0; i < dateval.length; i++) {
+			System.out.println(dateval[i]);
+		}
+	}
+%>
+<script type="text/javascript">
+	$(document).ready(function() {
+		    
+		    var chartSeries = [];
+		    var categorySeries = [];
+		    
+		    <%
+		        if(resultMap != null) {
+		            for(int m=0; m < searchColVal.length; m++) {
+		    %>
+		        chartSeries.push({
+		        	data: <%=(String)resultMap.get(searchColVal[m])%>,
+		        	field: "<%=searchColVal[m]%>",
+		        	name: "<%=searchColVal[m]%>"
+		        });
+		    <%
+		        	}
+		        }
+		    
+		        if(resultMap != null) {
+		        	Object[] dateval = (Object[])resultMap.get("regdate2");
+		        	for(int i=0; i < dateval.length; i++) {
+		        		System.out.println("+++++++++++++" + dateval[i]);
+		    %>
+		        categorySeries.push("<%=dateval[i]%>");
+		    <% 
+		        	}
+		        } 
+		    %>
+
+		    <% if(resultMap != null) {%>
+			$("#analysisChart").kendoChart({
+				seriesDefaults: {
+	                type: "line",
+	                style: "smooth"
+	            },
+	            legend: {
+	                position: "bottom"
+	            },
+	            chartArea: {
+	                background: ""
+	            },
+	            valueAxis: {
+	                labels: {
+	                    format: "{0}%"
+	                },
+	                line: {
+	                    visible: false
+	                },
+	                axisCrossingValue: -10
+	            },
+// 			    series: [{
+<%-- 			        name: "<%=searchColVal[0]%>", --%>
+<%-- 			        data: <%=resultMap.get(searchColVal[0])%> --%>
+// 			    }],
+                series: chartSeries,
+			    valueAxis: {
+			        min: 0
+			    },
+			    categoryAxis: {
+                    categories: categorySeries, //[2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011],
+                    majorGridLines: {
+                        visible: false
+                    }
+                },
+			    tooltip: {
+	                visible: true,
+	                format: "{0}%",
+	                template: "#= series.name #: #= value #"
+	            }
+			});
+			<% } %>
+		
+		$("#companyIdx").change(function(){
+			var companyIdx = $(this).val();
+			//alert(companyIdx);
+			$.ajax({
+				type: "POST", 
+				url: "/ajax/machineList.info", 
+				data: "companyIdx="+companyIdx, 
+				success: function(msg){
+					//alert(msg);
+					var resultObj = $.parseJSON(msg);
+					//alert(resultObj);
+					
+					var result = $("#specIdx");
+					result.empty();
+					result.append($("<option value=''></option>"));
+					//alert(resultObj.result.length);
+					for(i=0; i < resultObj.result.length; i++) {
+						//alert(resultObj.result[i].IDX);
+						result.append("<option value='"+resultObj.result[i].IDX+"'>"+resultObj.result[i].MACHINENAME+"</option>");
+						//result.append(
+				        //        $('<option></option>').val(resultObj.result[i].IDX).html(resultObj.result[i].MACHINENAME)
+				        //);
+
+					}
+					//$("#speciIdx").html(result);
+					$("#specIdx").show();
+				} 
+			});
+		});
+		
+		$("#specIdx").change(function(){
+			var specIdx = $(this).val();
+			
+			$.ajax({
+				type: "POST", 
+				url: "/ajax/smplList.info", 
+				data: "specIdx="+specIdx, 
+				success: function(msg){
+					var resultObj = $.parseJSON(msg);
+					var result = $("#sampleIdx");
+					result.empty();
+					result.append($("<option value=''></option>"));
+					//alert(resultObj.result.length);
+					for(i=0; i < resultObj.result.length; i++) {
+						//alert(resultObj.result[i].IDX);
+						result.append("<option value='"+resultObj.result[i].IDX+"' >"+resultObj.result[i].SPECINAME+"</option>");
+						//result.append(
+				        //        $('<option></option>').val(resultObj.result[i].IDX).html(resultObj.result[i].SPECINAME)
+				        //);
+
+					}
+					//$("#speciIdx").html(result);
+					$("#sampleIdx").show();
+				} 
+			});
+		});
+		
+		$("#search").click(function(){
+			var companyIdx = $("#companyIdx").val();
+			var specIdx = $("#specIdx").val();
+			var sampleIdx = $("#sampleIdx").val();
+			var startDate = $("#datepicker").val();
+			var endDate = $("#datepicker2").val();
+			var searchKey = $("#searchKey").val();
+			
+			$("#startDate").val(startDate);
+			$("#endDate").val(endDate);
+			//alert($("#startDate").val());
+			//alert($("#endDate").val());
+			var chkArray = [];
+			$("#checkList input:checked").each(function() {
+				chkArray.push($(this).val());
+			});
+			
+			var selected;
+			selected = chkArray.join(',');
+			
+			if(selected.length > 1){
+				//alert("You have selected " + selected);
+				$("#searchCol").val(selected);
+				alert($("#searchCol").val());
+			}else{
+				alert("검색값을 최소 1개 이상 선택해주세요.");	
+				return false;
+			}
+			
+			$("#searchForm").submit();
+		});
+		
+		$("#scontamination").click(function(e){
+    		var chk = $(this).is(":checked");
+    		if(chk) {
+    			document.getElementById("contaminationtbl").style.display = "";
+    		} else {
+    			document.getElementById("contaminationtbl").style.display = "none";
+    		}
+    	});
+		
+		$("#soil").click(function(e){
+    		var chk = $(this).is(":checked");
+    		if(chk) {
+    			document.getElementById("oiltbl").style.display = "";
+    		} else {
+    			document.getElementById("oiltbl").style.display = "none";
+    		}
+    	});
+		
+		$("#swear").click(function(e){
+    		var chk = $(this).is(":checked");
+    		if(chk) {
+    			document.getElementById("weartbl").style.display = "";
+    		} else {
+    			document.getElementById("weartbl").style.display = "none";
+    		}
+    	});
+		
+	});
+
+	// datepicker
+	$(function() {
+		$.datepicker.setDefaults( $.datepicker.regional[ "ko" ] );
+		$( "#datepicker" ).datepicker(
+			{
+				changeMonth: true,
+			    changeYear: true,
+				dateFormat: "yy-mm-dd", // 날자형식 YYYY-MM-DD 
+				//numberOfMonths: 3,  // 2달만 보여줌 
+				showButtonPanel: true,
+				//minDate : 0 //과거없음
+				maxDate : 0 // 미래없음
+			}
+		);
+		
+		//$.datepicker.setDefaults( $.datepicker.regional[ "ko" ] );
+		$( "#datepicker2" ).datepicker(
+			{
+				changeMonth: true,
+			    changeYear: true,
+				dateFormat: "yy-mm-dd", // 날자형식 YYYY-MM-DD 
+				//numberOfMonths: 3,  // 2달만 보여줌 
+				showButtonPanel: true,
+				//minDate : 0 //과거없음
+				maxDate : 0 // 미래없음
+			}
+		);
+	});
+
+
+
+	//날자간 차이. (16일 이상이 되면 UI가 보기 힘들어짐)
+	function chkDataDiff(){
+		var stDate = $("#datepicker").val();
+		var edDate = $("#datepicker2").val();
+		//alert("stDate : " + stDate + " / stDate : " + edDate + " = " + parseInt( (edDate-stDate)/(1000*60*60*24) ) || 0 );
+	}
+</script>
+<style>
+	.ui-datepicker{ font-size: 14px; width: 180px; }
+	.ui-datepicker select.ui-datepicker-month{ width:38%; font-size: 11px; }
+	.ui-datepicker select.ui-datepicker-year{ width:48%; font-size: 11px; }
+</style>
+
+</head>
+<body>
+	<table width="100%" align="center">
+        <tr>
+            <td align="left"><h2 class="pageTitleH1">정보분석 챠트 및 리스트</h2></td>
+        </tr>
+        <tr>
+            <td height="30">&nbsp;</td>
+        </tr>
+    </table>
+    <form name="searchForm" action="/info/infoAnalysis.info" method="POST">
+    <input type="hidden" id="searchCol" name="searchCol" value="">
+    <input type="hidden" id="searchKey" name="searchKey" value="1">
+    <input type="hidden" id="startDate" name="startDate" value="">
+    <input type="hidden" id="endDate" name="endDate" value="">
+    <table class="tableTypeC" width="100%" align="center">
+    <colgroup>
+        <col width="10%" />
+        <col width="23%" />
+        <col width="10%" />
+        <col width="23%" />
+        <col width="10%" />
+        <col width="23%" />
+    </colgroup>
+        <tr>
+            <th colspan="6" align="left">- 검색 조건 설정</th>
+        </tr>
+        <tr>
+            <th class="th02">회사명</th>
+            <td>
+            <%
+	        	List<Map> customerList = (List)request.getAttribute("customerList");
+	        %>
+            	<select name="companyIdx" id="companyIdx">
+                    <option value=""></option>
+                    <%
+                        if(customerList.size() <= 0) {
+                    %>
+                    
+                    <%
+                        } else {
+                        	for(Map item : customerList) {
+                    %>
+                        <option value="<%=item.get("IDX")%>" ><%=item.get("COMPANYNAME")%></option>
+                    <%
+                        	}
+                        }
+                    %>
+                </select>
+            </td>
+            <th class="th02">기계명</th>
+            <td>
+            	<select id="specIdx" name="specIdx"> 
+                </select>
+            </td>
+            <th class="th02">시료명</th>
+            <td>
+                <select id="sampleIdx" name="sampleIdx">
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th class="th02">날짜</th>
+            <td colspan="5"><b>시작일 :</b> <input type="text" id="datepicker"> ~ <b>종료일 :</b> <input type="text" id="datepicker2"></td>
+        </tr>
+        <tr>
+            <th class="th02">검색값</th>
+            <td colspan="5" align="center">
+                <%
+                    Map colMap = (Map)request.getAttribute("colMap");
+           
+                    if(colMap.size() > 0) {	
+                %>
+                    <!-- 검색설정값 part start -->
+                    <table class="tableTypeE" width="100%" align="center" border="0" style="border: none;">
+                        <tr>
+                            <td align="center">
+                                <input type="checkbox" id="scontamination" name="scontamination" value="contamination">1. Contamination
+                                <input type="checkbox" id="soil" name="soil" value="oilcondition">2. Oil Condition
+                                <input type="checkbox" id="swear" name="swear" value="wear">3. Wear
+                            </td>
+                        </tr>
+                    </table>
+                    <div id="checkList">
+                    <table class="tableTypeE" width="100%" align="center" id="contaminationtbl" name="contaminationtbl" style="display:none;" border="0">
+				        <tr>
+				            <td height="30">Particle Count : Laser Particle counter</td>
+				        </tr>
+				        <tr>
+				            <td>-Class</td>
+				        </tr>
+				        <tr>
+				            <td>
+				                <input type="checkbox" value="<%=colMap.get("iso1")%>" class="chk"> ISO 4406 
+								<input type="checkbox" value="<%=colMap.get("nas")%>" class="chk"> NAS 1638 
+								<input type="checkbox" value="<%=colMap.get("sae")%>" class="chk"> SAE AS 4059
+				            </td>
+				        </tr>
+				        <tr>
+				            <td>- 입자크기별(㎛) 개수(Number of particles/ml)</td>
+				        </tr>
+				        <tr>
+				            <td>
+				                <input type="checkbox" value="<%=colMap.get("p4um")%>" class="chk"> 4um (c)
+								<input type="checkbox" value="<%=colMap.get("p6um")%>" class="chk"> 6um (c) 
+								<input type="checkbox" value="<%=colMap.get("p14um")%>" class="chk"> 14um (c) 
+								<input type="checkbox" value="<%=colMap.get("p21um")%>" class="chk"> 21um (c)
+								<input type="checkbox" value="<%=colMap.get("p38um")%>" class="chk"> 38um (c) 
+								<input type="checkbox" value="<%=colMap.get("p70um")%>" class="chk"> 70um
+				            </td>
+				        </tr>
+                    </table>
+                    <table class="tableTypeE" width="100%" align="center" id="oiltbl" name="oiltbl" style="display:none;" border="0">
+                        <tr>
+                            <td><input type="checkbox" id="test" name="test" value="test2">테스트2</td>
+                        </tr>
+                    </table>
+                    <table class="tableTypeE" width="100%" align="center" id="weartbl" name="weartbl" style="display:none;" border="0">
+                        <tr>
+                            <td><input type="checkbox" id="test" name="test" value="test3">테스트3</td>
+                        </tr>
+                    </table>
+                    </div>
+                    <!-- 검색설정값 part end -->
+                <%
+                    }
+                %>
+            </td>
+        </tr>
+        <tr>
+            <th colspan="6" align="center"><input name="search" class="btn_style4" id="search" type="submit" value="확인"/></th>
+        </tr>
+    </table>
+    </form>
+    <table width="100%" align="center">
+        <tr>
+        	<td height="20"></td>
+        </tr>
+    </table>
+    <table width="100%" align="center">
+        <tr>
+            <td id="analysisChart" align="center"></td>
+        </tr>
+    </table>
+    <table width="100%" align="center">
+        <tr>
+        	<td height="20"></td>
+        </tr>
+    </table>
+    <table class="tableTypeB" width="100%" align="left">
+        <tr>
+            <th width="10%">구분</th>
+            <%
+                if(searchCol != "") {
+                	
+                	for(int i=0; i < searchColVal.length; i++) {
+            %>
+                <th><%=searchColVal[i] %></th>
+            <%
+                	}
+                	
+                }
+            %>
+        </tr>
+    <%
+        if(analysisList == null) {
+    %>
+        <tr>
+            <td colspan="<%=colspan%>">검색결과가 없습니다.</td>
+        </tr>
+    <%
+        } else {
+        	
+        	for(Map item : analysisList) {
+    %>
+        <tr>
+            <td><%=item.get("regdate").toString().substring(0, 4) + "-" + item.get("regdate").toString().substring(4, 6) + "-" + item.get("regdate").toString().substring(6, 8)%></td>
+            <%
+                if(searchCol != "") {
+                	
+                	for(int j=0; j < searchColVal.length; j++) {
+            %>
+                <td><%=item.get(searchColVal[j]) %></td>
+            <%
+                    }
+                	
+                }
+            %>
+        </tr>
+    <%
+            }
+        	
+        }
+    %>
+    </table>
+</body>
+</html>

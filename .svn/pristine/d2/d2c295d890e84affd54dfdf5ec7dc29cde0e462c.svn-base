@@ -1,0 +1,156 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>    
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+    <table witdh="600" align="center">
+        <tr>
+            <td align="center" style="font-size: 14px">기계 정보 입력</td>
+        </tr>
+    </table>
+    <%
+	    String idx = (String)request.getAttribute("idx");
+        String companyIdx = (String)request.getAttribute("companyIdx");
+	    String type = (String)request.getAttribute("type");
+	    Map<String, Object> machineInfo = (Map<String, Object>)request.getAttribute("machineInfo");
+	    
+	    String companyname = "";
+	    String machinename = "";
+	    String machinetype = "";
+	    String runtime = "";
+	    String oilname = "";
+	    String oiltime = "";
+	    String oilamount = "";
+	    String oilsupldate = "";
+	    String oilsuplamount = "";
+	    String regdate = "";
+	    
+	    if(machineInfo != null) {
+	    	
+	    	companyname = machineInfo.get("COMPANYNAME").toString();
+	    	machinename = machineInfo.get("MACHINENAME").toString();
+	    	machinetype = machineInfo.get("MACHINETYPE").toString();
+	    	runtime = machineInfo.get("RUNTIME").toString();
+	    	oilname = machineInfo.get("OILNAME").toString();
+	    	oiltime = machineInfo.get("OILTIME").toString();
+	    	oilamount = machineInfo.get("OILAMOUNT").toString();
+	    	oilsupldate = machineInfo.get("OILSUPLDATE").toString();
+	    	oilsuplamount = machineInfo.get("OILSUPLAMOUNT").toString();
+	    	regdate = machineInfo.get("REGDATE").toString();
+	    	
+	    }
+    %>
+    <table width="600" align="center">
+        <tr>
+            <td align="center" colspan="2" style="font-size: 12px; background-color: #999999">기계정보</td>
+        </tr>
+        <tr>
+            <td width="200" align="center" style="font-size: 12px">기계명</td>
+            <td width="400" style="font-size: 12px"><%=machinename%></td>
+        </tr>
+        <tr>
+            <td width="200" align="center" style="font-size: 12px">기계종류</td>
+            <td width="400" style="font-size: 12px"><%=machinetype%></td>
+        </tr>
+        <tr>
+            <td width="200" align="center" style="font-size: 12px">기계운용시간</td>
+            <td width="400" style="font-size: 12px"><%=runtime%></td>
+        </tr>
+        <tr>
+            <td width="200" align="center" style="font-size: 12px">오일명</td>
+            <td width="400" style="font-size: 12px"><%=oilname%></td>
+        </tr>
+        <tr>
+            <td width="200" align="center" style="font-size: 12px">오일사용시간</td>
+            <td width="400" style="font-size: 12px"><%=oiltime%></td>
+        </tr>
+        <tr>
+            <td width="200" align="center" style="font-size: 12px">오일사용량</td>
+            <td width="400" style="font-size: 12px"><%=oilamount%></td>
+        </tr>
+        <tr>
+            <td width="200" align="center" style="font-size: 12px">최근오일보충일</td>
+            <td width="400" style="font-size: 12px"><%=oilsupldate%></td>
+        </tr>
+        <tr>
+            <td width="200" align="center" style="font-size: 12px">최근오일보충량</td>
+            <td width="400" style="font-size: 12px"><%=oilsuplamount%></td>
+        </tr>
+    </table>
+    <table width="600" align="center">
+        <tr>
+            <td colspan="5" style="font-size: 12px; background-color: #999999">샘플정보</td>
+        </tr>
+        <tr>
+            <td align="center" style="font-size: 12px">시료번호</td>
+            <td align="center" style="font-size: 12px">시료명</td>
+            <td align="center" style="font-size: 12px">샘플링포인트</td>
+            <td align="center" style="font-size: 12px">샘플링일자</td>
+            <td align="center" style="font-size: 12px">삭제처리</td>
+        </tr>
+        <%
+            List<Map> sampleList = (List)request.getAttribute("sampleInfo");
+        
+            if(sampleList == null) {
+        %>
+            <tr>
+                <td colspan="5" height="22" align="center" style="border-color:rgb(999);border:1px;border-style:solid;"><font style="font-size:12px">등록된 내용이 없습니다.</td>
+            </tr>
+        <%
+            } else {
+            	
+            	for(Map item : sampleList) {
+        %>
+        <tr>
+            <td align="center" style="font-size: 12px"><%=item.get("SPECINUM") %></td>
+            <td align="center" style="font-size: 12px"><%=item.get("SPECINAME") %></td>
+            <td align="center" style="font-size: 12px"><%=item.get("SMPLPOINT") %></td>
+            <td align="center" style="font-size: 12px"><%=item.get("SMPLDATE") %></td>
+            <td align="center" style="font-size: 12px"><a href="/customer/sampleDelete.info?idx=<%=item.get("IDX") %>&companyIdx=<%=companyIdx%>&machineIdx=<%=idx%>">삭제</a></td>
+        </tr>
+        <%
+            	}
+            }
+        %>
+    </table>
+    <table width="600" align="center">
+        <tr>
+            <td height="20"></td>
+        </tr>
+    </table>
+    <form name="sampleForm" action="/customer/sampleWrite.info" method="post">
+    <input type="hidden" id="idx" name="idx" value="<%=idx%>">
+    <input type="hidden" id="companyIdx" name="companyIdx" value="<%=companyIdx%>">
+    <table width="600" align="center">
+        <tr>
+            <td align="center" style="font-size: 12px">시료명</td>
+            <td align="center" style="font-size: 12px"><input type="text" id="sampleName" name="sampleName" style="width:100px; height:22px"></td>
+            <td align="center" style="font-size: 12px">샘플링포인트</td>
+            <td align="center" style="font-size: 12px"><input type="text" id="samplePoint" name="samplePoint" style="width:100px; height:22px"></td>
+            <td align="center" style="font-size: 12px">샘플링일자</td>
+            <td align="center" style="font-size: 12px"><input type="text" id="sampleDate" name="sampleDate" style="width:100px; height:22px"></td>
+        </tr>
+        <tr>
+            <td colspan="6" align="center"><input type="submit" value="확인" style="width:200px; height:30px"></td>
+        </tr>
+    </table>
+    </form>
+    <table width="600" align="center">
+        <tr>
+            <td height="30"></td>
+        </tr>
+    </table>
+    <table width="600" align="center">
+        <tr>
+            <td align="center" style="font-size: 12px"><a href="/customer/machineWrite.info?idx=<%=idx%>&companyIdx=<%=companyIdx%>">수정</a></td>
+            <td align="center" style="font-size: 12px"><a href="/customer/machineDelete.info?idx=<%=idx%>&companyIdx=<%=companyIdx%>">삭제</a></td>
+            <td align="center" style="font-size: 12px"><a href="/customer/machineList.info?companyIdx=<%=companyIdx%>">돌아가기</a></td>
+        </tr>
+    </table>
+</body>
+</html>

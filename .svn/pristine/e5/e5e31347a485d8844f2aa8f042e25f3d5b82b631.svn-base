@@ -1,0 +1,64 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %> 
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+<script>
+	function delcontent(idx){
+
+		if(confirm("삭제하시겠습니까?")){
+			location.href="/sample/delete.info?idx="+idx;
+		}
+	}
+
+	function modifycontent(idx){
+
+		if(confirm("수정하시겠습니까?")){
+			location.href="/sample/write.info?idx="+idx;
+		}
+	}
+</script>
+</head>
+<body>
+<%
+	String idx = (String)request.getAttribute("idx");
+
+	Map<String, Object> viewList = (Map<String, Object>)request.getAttribute("result");
+
+%>
+<table witdh="600" align="center">
+    <tr>
+        <td align="center" style="font-size: 14px">게시판</td>
+    </tr>
+</table>
+<table width="600" style="border-color:rgb(666);border:1px;border-style:solid;" align="center">
+	<tr>
+		<td width="100" style="border-color:rgb(666);border:1px;border-style:solid;font-size:12px">이름 : </td>
+		<td style="border-color:rgb(666);border:1px;border-style:solid;font-size:12px"><%=viewList.get("WRITER") %></td>
+	</tr>
+	<tr>
+		<td width="100" style="border-color:rgb(666);border:1px;border-style:solid;font-size:12px">비밀번호 : </td>
+		<td style="border-color:rgb(666);border:1px;border-style:solid;font-size:12px"><%=viewList.get("PASSWD") %></td>
+	</tr>
+	<tr>
+		<td width="100" style="border-color:rgb(666);border:1px;border-style:solid;font-size:12px">제목 : </td>
+		<td style="border-color:rgb(666);border:1px;border-style:solid;font-size:12px"><%=viewList.get("TITLE") %></td>
+	</tr>
+	<tr>
+		<td width="100" style="border-color:rgb(666);border:1px;border-style:solid;font-size:12px">내용 : </td>
+		<td style="border-color:rgb(666);border:1px;border-style:solid;font-size:12px"><%=viewList.get("CONTENT") %></td>
+	</tr>
+</table>
+<table cellpadding=1" cellspacing="1" border="0" width="600" align="center">
+	<tr>
+		<td align="center" style="font-size:12px"><a href="/sample/list.info">리스트</a></td>
+		<td align="center" style="font-size:12px"><a href="javascript:modifycontent('<%=idx %>')">수정</a></td> 
+		<td align="center" style="font-size:12px"><a href="#" onClick="javascript:delcontent('<%=idx %>')">삭제</a></td>
+	</tr>
+</table>
+
+</body>
+</html>

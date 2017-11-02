@@ -1,0 +1,238 @@
+package com.eye2web.infosys.controller;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.eye2web.infosys.bean.LoginBean;
+import com.eye2web.infosys.service.InfoService;
+import com.eye2web.infosys.util.CommonUtil;
+
+/**
+ * @author HJKim
+ * @Description : 정보관리 화면 컨트롤러
+ *
+ */
+@Controller
+public class InfoController {
+
+	private static Logger logger = Logger.getLogger(InfoController.class);
+
+	@Autowired
+	private InfoService infoService;
+
+	private LoginBean loginBean;
+
+	private CommonUtil commonUtil;
+
+	private String userId;
+
+	/**
+	 * @Description 정보관리 메인화면
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/info/infoMain.info")
+	public ModelAndView infoMain(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+
+		    mav.setViewName("/info/infoMain");
+
+		} else {
+
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 정보 리스트
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/info/infoList.info")
+	public ModelAndView infoList(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+
+			List<Map> infoList = infoService.getList();
+
+			mav.addObject("memberList", infoList);
+			mav.setViewName("/info/infoList");
+
+		} else {
+
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 정보 입력 화면
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/info/infoWrite.info")
+	public ModelAndView infoWrite(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		// 로그인한 사용자인 경우
+		if(userId != null && userId != "") {
+
+			String idx = "";
+			int tmpidx = 0;
+			Map<String, Object> infoMap = null;
+			idx = req.getParameter("idx");
+
+			// 정보 idx 값이 있을 경우 수정, 없으면 입력
+			if(idx == null || idx == "" || idx.length() < 0) {
+
+				// idx값이 없을 경우 빈 입력 페이지 표시
+				mav.addObject("infoMap", infoMap);
+				mav.addObject("idx", "");
+				mav.addObject("type", "write");
+				mav.setViewName("/info/infoWrite");
+
+			} else {
+
+				// idx 값이 있을 경우 관련 정보를 DB에서 가져와 페이지의 각 필드에 노출
+				tmpidx = Integer.parseInt(idx);
+				infoMap = infoService.getInfoDetail(tmpidx);
+
+				if(infoMap.size() > 0) {
+
+					mav.addObject("idx", idx);
+					mav.addObject("infoMap", infoMap);
+					mav.addObject("type", "update");
+					mav.setViewName("/info/infoWrite");
+
+				} else {
+
+					Map<String, Object> errorMap = new HashMap<String, Object>();
+					errorMap.put("msg", "정보가 없습니다..");
+					errorMap.put("url", "/infoMap/infoList.info");
+					mav.addObject("errorMap", errorMap);
+					mav.setViewName("/common/error");
+
+				}
+
+			}
+
+		} else {
+
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 정보입력 처리
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/info/infoWriteProcess.info")
+	public ModelAndView infoWriteProcess(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+
+			Map<String, Object> infoMap = commonUtil.convertReqToMap(req);
+
+		} else {
+
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 정보 보기 화면
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/info/infoView.info")
+	public ModelAndView infoView(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+
+		} else {
+
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+
+		}
+
+		return mav;
+	}
+
+}

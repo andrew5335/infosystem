@@ -1,0 +1,1678 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>    
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>OilTalk Report System</title>
+<%
+	String type = (String)request.getAttribute("type");
+	String idx = (String)request.getAttribute("idx");
+	Map<String, Object> infoMap = (Map<String, Object>)request.getAttribute("infoMap");
+%>
+<!-- <script type="text/javascript" src="/js/jquery-1.11.1.min.js"></script> -->
+<script type="text/javascript">
+    $(document).ready(function() {
+    	$("#chktest").click(function(e) {
+    		var chk = $(this).is(":checked");
+    		//alert(chk);
+    		if(chk) {
+    			document.getElementById("testtable").style.display = "";
+    		} else {
+    			document.getElementById("testtable").style.display = "none";
+    		}
+    	});
+    	
+    	$("#condition").click(function(e){
+    		var chk = $(this).is(":checked");
+    		if(chk) {
+    			document.getElementById("conditiontbl").style.display = "";
+    		} else {
+    			document.getElementById("conditiontbl").style.display = "none";
+    		}
+    	});
+    	
+    	$("#contamination").click(function(e){
+    		var chk = $(this).is(":checked");
+    		if(chk) {
+    			document.getElementById("contaminationtbl").style.display = "";
+    		} else {
+    			document.getElementById("contaminationtbl").style.display = "none";
+    		}
+    	});
+    	
+    	$("#wear").click(function(e){
+    		var chk = $(this).is(":checked");
+    		if(chk) {
+    			document.getElementById("weartbl").style.display = "";
+    		} else {
+    			document.getElementById("weartbl").style.display = "none";
+    		}
+    	});
+    	
+    	$("#companyIdx").change(function(){
+    		var companyIdx = $(this).val();
+    		//alert(companyIdx);
+    		$.ajax({
+    			type: "POST", 
+    			url: "/ajax/machineList.info", 
+    			data: "companyIdx="+companyIdx, 
+    			success: function(msg){
+    				//alert(msg);
+    				var resultObj = $.parseJSON(msg);
+    				//alert(resultObj);
+    				
+    				var result = $("#specIdx");
+    				result.empty();
+    				result.append($("<option value=''></option>"));
+    				//alert(resultObj.result.length);
+    				for(i=0; i < resultObj.result.length; i++) {
+    					//alert(resultObj.result[i].IDX);
+    					result.append("<option value='"+resultObj.result[i].IDX+"'>"+resultObj.result[i].MACHINENAME+"</option>");
+    					//result.append(
+    			        //        $('<option></option>').val(resultObj.result[i].IDX).html(resultObj.result[i].MACHINENAME)
+    			        //);
+
+    				}
+    				//$("#speciIdx").html(result);
+    				$("#specIdx").show();
+    			} 
+    		});
+    	});
+    	
+    	$("#specIdx").change(function(){
+    		var specIdx = $(this).val();
+    		
+    		$.ajax({
+    			type: "POST", 
+    			url: "/ajax/smplList.info", 
+    			data: "specIdx="+specIdx, 
+    			success: function(msg){
+    				var resultObj = $.parseJSON(msg);
+    				var result = $("#sampleIdx");
+    				result.empty();
+    				result.append($("<option value=''></option>"));
+    				//alert(resultObj.result.length);
+    				for(i=0; i < resultObj.result.length; i++) {
+    					//alert(resultObj.result[i].IDX);
+    					result.append("<option value='"+resultObj.result[i].IDX+"' >"+resultObj.result[i].SPECINAME+"</option>");
+    					//result.append(
+    			        //        $('<option></option>').val(resultObj.result[i].IDX).html(resultObj.result[i].SPECINAME)
+    			        //);
+
+    				}
+    				//$("#speciIdx").html(result);
+    				$("#sampleIdx").show();
+    			} 
+    		});
+    	});
+    	
+    	$("#sampleIdx").change(function(){
+    		var sampleIdx = $(this).val();
+    		
+    		$.ajax({
+    			type: "POST", 
+    			url: "/ajax/smplPoint.info", 
+    			data: "sampleIdx="+sampleIdx, 
+    			success: function(msg){
+    				var resultObj = $.parseJSON(msg);
+    				//alert(resultObj.result);
+    				$("#smplpoint").val(resultObj.result);
+    			}
+    		});
+    	});
+    	
+    });
+    
+    function openDoc() {
+    	if(document.getElementById("idx").value == "") {
+    		document.getElementById("contaminationtbl").style.display = "none";
+    		document.getElementById("conditiontbl").style.display = "none";
+    		document.getElementById("weartbl").style.display = "none";
+    	} else {
+    		document.getElementById("contaminationtbl").style.display = "";
+    		document.getElementById("conditiontbl").style.display = "";
+    		document.getElementById("weartbl").style.display = "";
+    	}
+    }
+</script>
+</head>
+<body onload="openDoc();">
+    <table width="100%" align="center">
+        <tr>
+            <td align="left"><h2 class="pageTitleH1">Report Data 입력</h2></td>
+        </tr>
+        <tr>
+            <td height="30">&nbsp;</td>
+        </tr>
+    </table>
+<%
+    //String type = (String)request.getAttribute("type");
+	//String idx = (String)request.getAttribute("idx");
+	//Map<String, Object> infoMap = (Map<String, Object>)request.getAttribute("infoMap");
+	
+	if(infoMap != null) {
+%> 
+<script>
+	function getCompanyVal(machinename) {
+		var tmpcompanyIdx = document.getElementById("companyIdx");
+		var companyIdx = tmpcompanyIdx.options[tmpcompanyIdx.selectedIndex].value;
+		var specIdx;
+		//alert(machinename);
+		//alert(companyIdx.options[companyIdx.selectedIndex].value);
+		$.ajax({
+			type: "POST", 
+			url: "/ajax/machineList.info", 
+			data: "companyIdx="+companyIdx, 
+			success: function(msg){
+				//alert(msg);
+				var resultObj = $.parseJSON(msg);
+				//alert(resultObj);
+				
+				var result = $("#specIdx");
+				result.empty();
+				result.append($("<option value=''></option>"));
+				//alert(resultObj.result.length);
+				for(i=0; i < resultObj.result.length; i++) {
+					//alert(resultObj.result[i].IDX);
+					if(machinename != resultObj.result[i].MACHINENAME) {
+						result.append("<option value='"+resultObj.result[i].IDX+"'>"+resultObj.result[i].MACHINENAME+"</option>");
+				    } else {
+				    	result.append("<option value='"+resultObj.result[i].IDX+"' selected>"+resultObj.result[i].MACHINENAME+"</option>");
+				    	specIdx = resultObj.result[i].IDX;
+				    }
+					//result.append(
+			        //        $('<option></option>').val(resultObj.result[i].IDX).html(resultObj.result[i].MACHINENAME)
+			        //);
+				}
+				//$("#speciIdx").html(result);
+				//alert(specIdx);
+	
+				getSpecVal(specIdx, "<%=infoMap.get("SAMPLENAME")%>");
+				$("#specIdx").show();
+			} 
+		});
+	}
+	
+	function getSpecVal(specIdx, specname) {
+		
+		$.ajax({
+			type: "POST", 
+			url: "/ajax/smplList.info", 
+			data: "specIdx="+specIdx, 
+			success: function(msg){
+				var resultObj = $.parseJSON(msg);
+				var result = $("#sampleIdx");
+				result.empty();
+				result.append($("<option value=''></option>"));
+				//alert(resultObj.result.length);
+				for(i=0; i < resultObj.result.length; i++) {
+					//alert(resultObj.result[i].IDX);
+					if(specname != resultObj.result[i].SPECINAME) {
+						result.append("<option value='"+resultObj.result[i].IDX+"' >"+resultObj.result[i].SPECINAME+"</option>");
+					} else {
+						result.append("<option value='"+resultObj.result[i].IDX+"' selected>"+resultObj.result[i].SPECINAME+"</option>");
+					}
+					//result.append(
+			        //        $('<option></option>').val(resultObj.result[i].IDX).html(resultObj.result[i].SPECINAME)
+			        //);
+	
+				}
+				//$("#speciIdx").html(result);
+				$("#sampleIdx").show();
+			} 
+		});
+	}
+</script>
+    <form name="infoForm" action="/info/infoWriteProcess.info" method="POST" enctype="multipart/form-data">
+    <input type="hidden" id="type" name="type" value="<%=type%>">
+    <input type="hidden" id="idx" name="idx" value="<%=idx%>">
+    <table class="tableTypeB" width="100%" align="center">
+        <tr>
+            <th>업체명</th>
+            <th>장치타입</th>
+            <th>시료명</th>
+            <th>샘플링포인트</th>
+            <th>유종</th>
+            <th>담당자</th>
+        </tr>
+        <tr>
+        <%
+        	List<Map> customerList = (List)request.getAttribute("customerList");
+        %>
+            <td style="font-size:12px;" align="center">
+                <select name="companyIdx" id="companyIdx">
+                    <option value=""></option>
+                    <%
+                        if(customerList.size() <= 0) {
+                    %>
+                    
+                    <%
+                        } else {
+                        	for(Map item : customerList) {
+                    %>
+                        <option value="<%=item.get("IDX")%>" <%if(item.get("COMPANYNAME").toString().equals(infoMap.get("COMPANYNAME").toString())) {%>selected<%}%>><%=item.get("COMPANYNAME")%></option>
+                    <%
+                        	}
+                        }
+                    %>
+                    
+                </select>
+            </td>
+            <td style="font-size:12px;" align="center">
+                <select id="specIdx" name="specIdx"> 
+                </select>
+            </td>
+            <td style="font-size:12px;" align="center">
+                <select id="sampleIdx" name="sampleIdx">
+                </select>
+            </td>
+            <td style="font-size:12px;" align="center"><input type="text" id="smplpoint" name="smplpoint" style="width:80px; height:15px" value="<%=infoMap.get("SMPLPOINT")%>"></td>
+            <td style="font-size:12px;" align="center"><input type="text" id="oilType" name="oilType" style="width:80px; height:15px" value="<%=infoMap.get("OILTYPE")%>"></td>
+            <td style="font-size:12px;" align="center"><input type="text" id="authorizer" name="authorizer" style="width:80px; height:15px" value="<%=infoMap.get("AUTHORIZER")%>"></td>
+        </tr>
+<!--         <tr> -->
+<!--             <td colspan="5"> -->
+<!--                 <table width="100%" align="center"> -->
+<!--                     <tr> -->
+<!--                         <td style="font-size:12px;" align="center">샘플링포인트</td> -->
+<!--                         <td style="font-size:12px;" align="center"></td> -->
+<!--                     </tr> -->
+<!--                 </table> -->
+<!--             </td> -->
+<!--         </tr> -->
+    </table>
+<script>
+getCompanyVal("<%=infoMap.get("MACHINENAME")%>");
+</script>   
+    <table class="tableTypeB" width="100%" align="center">
+        <tr>
+            <td style="font-size:12px;" align="center" width="33%"><input type="checkbox" id="contamination" name="contamination" value="open"">1. Contamination</td>
+            <td style="font-size:12px;" align="center" width="33%"><input type="checkbox" id="condition" name="condition" value="open"">2. Oil Condition</td>
+            <td style="font-size:12px;" align="center" width="33%"><input type="checkbox" id="wear" name="wear" value="open"">3. Wear</td>
+        </tr>
+    </table>
+    <table class="tableTypeB" cellpadding="0" cellspacing="1" border="0" id="contaminationtbl" name="contiminationtbl" width="100%" align="center" style="display:none;">
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="center" valign="bottom"><b>1. Contamination 항목</b></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Particle Count : Laser Particle counter</b></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:20px;" align="left" valign="bottom">- Class</td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">ISO 4406</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="iso" name="iso" style="width:80px; height:15px" value="<%=infoMap.get("ISO1")%>"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">NAS 1638</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="nas" name="nas" style="width:80px; height:15px" value="<%=infoMap.get("NAS")%>"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">SAE AS 4059</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="sae" name="sae" style="width:80px; height:15px" value="<%=infoMap.get("SAE")%>"></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:20px;" align="left" valign="bottom">- 입자크기별(㎛) 개수(Number of particles/ml)</td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>4um (c)</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="p4um" name="p4um" style="width:80px; height:15px" value="<%=infoMap.get("P4UM")%>"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>6um (c)</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="p6um" name="p6um" style="width:80px; height:15px" value="<%=infoMap.get("P6UM")%>"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>14um (c)</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="p14um" name="p14um" style="width:80px; height:15px" value="<%=infoMap.get("P14UM")%>"></td>
+			        </tr>
+			        <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>21um (c)</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="p21um" name="p21um" style="width:80px; height:15px" value="<%=infoMap.get("P21UM")%>"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>38um (c)</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="p38um" name="p38um" style="width:80px; height:15px" value="<%=infoMap.get("P38UM")%>"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>70um</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="p70um" name="p70um" style="width:80px; height:15px" value="<%=infoMap.get("P70UM")%>"></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>20um Wear Mode</b></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:20px;" align="left" valign="bottom">- Cutting Wear</td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Counts</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="ccount" name="ccount" style="width:80px; height:15px" value="<%=infoMap.get("CCOUNT")%>"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Average</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="caverage" name="caverage" style="width:80px; height:15px" value="<%=infoMap.get("CAVERAGE")%>"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>STD</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="cstd" name="cstd" style="width:80px; height:15px" value="<%=infoMap.get("CSTD")%>"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Max size</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="cmaxsize" name="cmaxsize" style="width:80px; height:15px" value="<%=infoMap.get("CMAXSIZE")%>"></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:20px;" align="left" valign="bottom">- Severe Sliding Wear</td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Counts</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="scount" name="scount" style="width:80px; height:15px" value="<%=infoMap.get("SCOUNT")%>"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Average</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="saverage" name="saverage" style="width:80px; height:15px" value="<%=infoMap.get("SAVERAGE")%>"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>STD</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="sstd" name="sstd" style="width:80px; height:15px" value="<%=infoMap.get("SSTD")%>"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Max size</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="smaxsize" name="smaxsize" style="width:80px; height:15px" value="<%=infoMap.get("SMAXSIZE")%>"></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:20px;" align="left" valign="bottom">- Fatigue</td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Counts</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="fcount" name="fcount" style="width:80px; height:15px" value="<%=infoMap.get("FCOUNT")%>"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Average</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="faverage" name="faverage" style="width:80px; height:15px" value="<%=infoMap.get("FAVERAGE")%>"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>STD</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="fstd" name="fstd" style="width:80px; height:15px" value="<%=infoMap.get("FSTD")%>"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Max size</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="fmaxsize" name="fmaxsize" style="width:80px; height:15px" value="<%=infoMap.get("FMAXSIZE")%>"></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:20px;" align="left" valign="bottom">- Nonmetallic Particles</td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Counts</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="ncount" name="ncount" style="width:80px; height:15px" value="<%=infoMap.get("NCOUNT")%>"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Average</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="naverage" name="naverage" style="width:80px; height:15px" value="<%=infoMap.get("NAVERAGE")%>"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>STD</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="nstd" name="nstd" style="width:80px; height:15px" value="<%=infoMap.get("NSTD")%>"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Max size</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="nmaxsize" name="nmaxsize" style="width:80px; height:15px" value="<%=infoMap.get("NMAXSIZE")%>"></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+                        <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="center">Cutting Wear</td>
+                        <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="center">Fatigue Wear</td>
+                        <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="center">Nonmetalic Particles</td>
+                    </tr>
+                    <tr>
+                        <td><input type="file" id="ucuttingWear" name="ucuttingWear"></td>
+                        <td><input type="file" id="ufatigueWear" name="ufatigueWear"></td>
+                        <td><input type="file" id="unonmetalicparticles" name="unonmetalicparticles"></td>
+                    </tr>
+                    <tr>
+                        <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="center">Severe Sliding Wear</td>
+                        <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="center">Water</td>
+                        <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="center">Fiber</td>
+                    </tr>
+                    <tr>
+                        <td><input type="file" id="usevereSlidingWear" name="usevereSlidingWear"></td>
+                        <td><input type="file" id="uwater" name="uwater"></td>
+                        <td><input type="file" id="ufiber" name="ufiber"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Particle Contaminaion by the counting method using an optical microscope</b></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:20px;" align="left" valign="bottom">- Class</td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">ISO 4406</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="iso2" name="iso2" style="width:80px; height:15px" value="<%=infoMap.get("ISO2")%>"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">NAS 1638</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="nas" name="nas2" style="width:80px; height:15px" value="<%=infoMap.get("NAS2")%>"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">SAE AS 4059</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="sae" name="sae2" style="width:80px; height:15px" value="<%=infoMap.get("SAE2")%>"></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:20px;" align="left" valign="bottom">- 입자크기별(㎛) 개수(Number of particles/ml)</td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+	            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">5-15um</td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="5" name="5" style="width:80px; height:15px" value="<%=infoMap.get("FIVE")%>"></td>
+	            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">15-25um</td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="15" name="15" style="width:80px; height:15px" value="<%=infoMap.get("FIFTEEN")%>"></td>
+	            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">25-50um</td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="25" name="25" style="width:80px; height:15px" value="<%=infoMap.get("TWENTYFIVE")%>"></td>
+	            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">50-100um</td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="50" name="50" style="width:80px; height:15px" value="<%=infoMap.get("FIFTY")%>"></td>
+	        </tr>
+	        <tr>
+	            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>100um</td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="100" name="100" style="width:80px; height:15px" value="<%=infoMap.get("HUNDRED")%>"></td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+	        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+                        <td colspan="3" width="200" style="font-size:12px; background-color: #cccccc" align="center">Particle Information</td>
+                    </tr>
+                    <tr>
+                        <td><input type="file" id="uParticleInfo1" name="uParticleInfo1"></td>
+                        <td><input type="file" id="uParticleInfo2" name="uParticleInfo2"></td>
+                        <td><input type="file" id="uParticleInfo3" name="uParticleInfo3"></td>        
+                    </tr>
+                    <tr>
+                        <td><input type="file" id="uParticleInfo4" name="uParticleInfo4"></td>
+                        <td><input type="file" id="uParticleInfo5" name="uParticleInfo5"></td>
+                        <td></td>
+                    </tr>
+                </table>
+                <table width="100%" align="center">
+                    <tr>
+                        <td width="200" style="font-size:12px; background-color: #cccccc" align="center">Membrane Patch Image1</td>
+                        <td><input type="file" id="uMembranePatchImg1" name="uMembranePatchImg1"></td>
+                    </tr>
+                </table>
+                <table width="100%" align="center">
+                    <tr>
+                        <td colspan="3" width="200" style="font-size:12px; background-color: #cccccc" align="center">Membrane Patch Image2 (확대)</td>
+                    </tr>
+                    <tr>
+                        <td valign="top"><input type="file" id="uMembranePatchImg2" name="uMembranePatchImg2"></td>
+                        <td valign="top"><input type="file" id="uMembranePatchImg3" name="uMembranePatchImg3"></td>
+                        <td valign="top"><input type="file" id="uMembranePatchImg4" name="uMembranePatchImg4"></td>
+                    </tr>
+                    <tr>
+                        <td valign="top"><input type="file" id="uMembranePatchImg5" name="uMembranePatchImg5"></td>
+                        <td valign="top"><input type="file" id="uMembranePatchImg6" name="uMembranePatchImg6"></td>
+                        <td valign="top"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Water Content (ppm)</b></td>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Chlorine (ppm)</b></td>
+        </tr>
+        <tr>
+            <td width="200" height="20" style="font-size:12px; background-color: #cccccc" align="right">Water</td>
+            <td colspan="3" height="20" style="font-size:12px;" align="left"><input type="text" id="water" name="water" style="width:80px; height:15px" value="<%=infoMap.get("WATER")%>"></td>
+            <td width="200" height="20" style="font-size:12px; background-color: #cccccc" align="right">Chlorine</td>
+            <td colspan="3" height="20" style="font-size:12px;" align="left"><input type="text" id="chlorine" name="chlorine" style="width:80px; height:15px" value="<%=infoMap.get("CHLORINE")%>"></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Membrane Patch Colorimetry</b></td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">iMPC Value</td>
+			            <td height="20" style="font-size:12px; " align="left"><input type="text" id="impcval" name="impcval" style="width:80px; height:15px" value="<%=infoMap.get("IMPCVAL")%>"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">MPC Value</td>
+			            <td height="20" style="font-size:12px;" align="left"><input type="text" id="mpcval" name="mpcval" style="width:80px; height:15px" value="<%=infoMap.get("MPCVAL")%>"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">평가</td>
+			            <td height="20" style="font-size:12px;" align="left"><input type="text" id="eval" name="eval" style="width:80px; height:15px" value="<%=infoMap.get("EVAL")%>"></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">Patch</td>
+            <td colspan="3" height="20" style="font-size:12px; " align="left"><input type="file" id="uPatch" name="uPatch"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">Patch 확대</td>
+            <td colspan="3" height="20" style="font-size:12px;" align="left"><input type="file" id="uPatchExt" name="uPatchExt"></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>MPC for Phosphate Ester Fluids (Patch wt(mg))</b></td>
+        </tr>
+        <tr>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right" valign="bottom">MPC weight</td>
+            <td width="100" height="20" style="font-size:12px; " align="left"><input type="text" id="mpcweight" name="mpcweight" style="width:80px; height:15px" value="<%=infoMap.get("MPCWEIGHT")%>"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Patch test</b></td>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Insolubles test for Phosphate Ester Fluids</b></td>
+        </tr>
+        <tr>
+            <td colspan="4" width="400" height="20" style="font-size:12px; " align="left"><input type="file" id="uPatchTest" name="uPatchTest"></td>
+            <td colspan="4" width="400" height="20" style="font-size:12px;" align="left"><input type="file" id="uSludge" name="uSludge"></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Blotter spot test</b></td>
+        </tr>
+        <tr>
+            <td colspan="8" width="400" height="20" style="font-size:12px; " align="left"><input type="file" id="uBlotter" name="uBlotter"></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Elemental analysis ; Contamination Metals(ppm)</b></td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+                        <td colspan=2" height="20" style="font-size:12px; background-color: #cccccc" align="center">Silicon (Si)</td>
+                        <td colspan=2" height="20" style="font-size:12px; background-color: #cccccc" align="center">Boron (B)</td>
+                        <td colspan=2" height="20" style="font-size:12px; background-color: #cccccc" align="center">Sodium (Na)</td>
+                    </tr>
+                    <tr>
+                        <td height="20" style="font-size:12px; background-color: #cccccc" align="center">RDE</td>
+                        <td height="20" style="font-size:12px; background-color: #cccccc" align="center">RFS</td>
+                        <td height="20" style="font-size:12px; background-color: #cccccc" align="center">RDE</td>
+                        <td height="20" style="font-size:12px; background-color: #cccccc" align="center">RFS</td>
+                        <td height="20" style="font-size:12px; background-color: #cccccc" align="center">RDE</td>
+                        <td height="20" style="font-size:12px; background-color: #cccccc" align="center">RFS</td>
+                    </tr>
+                    <tr>
+                        <td width="133" height="20" style="font-size:12px; " align="left"><input type="text" id="siliconrde" name="siliconrde" style="width:130px; height:15px" value="<%=infoMap.get("SILICONRDE")%>"></td>
+                        <td width="133" height="20" style="font-size:12px; " align="left"><input type="text" id="siliconrfs" name="siliconrfs" style="width:130px; height:15px" value="<%=infoMap.get("SILICONRFS")%>"></td>
+                        <td width="133" height="20" style="font-size:12px; " align="left"><input type="text" id="boronrde" name="boronrde" style="width:130px; height:15px" value="<%=infoMap.get("BORONRDE")%>"></td>
+                        <td width="133" height="20" style="font-size:12px; " align="left"><input type="text" id="boronrfs" name="boronrfs" style="width:130px; height:15px" value="<%=infoMap.get("BORONRFS")%>"></td>
+                        <td width="133" height="20" style="font-size:12px; " align="left"><input type="text" id="sodiumrde" name="sodiumrde" style="width:130px; height:15px" value="<%=infoMap.get("SODIUMRDE")%>"></td>
+                        <td width="133" height="20" style="font-size:12px; " align="left"><input type="text" id="sodiumrfs" name="sodiumrfs" style="width:130px; height:15px" value="<%=infoMap.get("SODIUMRFS")%>"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>FT-IR : Contamination (Abs)</b></td>
+        </tr>
+        <tr>
+            <td colspan="8" align="center">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Oxidation ASTM</td>
+			            <td width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Detergent(sulfonate)</td>
+			            <td width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Diesel ASTM</td>
+			            <td width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Ethylene Glycol Coolant ASTM</td>
+			        </tr>
+			        <tr>
+			            <td width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="oxidation" name="oxidation" style="width:195px; height:15px" value="<%=infoMap.get("OXIDATION")%>"></td>
+			            <td width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="detergent" name="detergent" style="width:195px; height:15px" value="<%=infoMap.get("DETERGENT")%>"></td>
+			            <td width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="diesel" name="diesel" style="width:195px; height:15px" value="<%=infoMap.get("DIESEL")%>"></td>
+			            <td width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="ethylene" name="ethylene" style="width:195px; height:15px" value="<%=infoMap.get("ETHYLENE")%>"></td>
+			        </tr>
+			        <tr>
+			            <td width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Nitration ASTM</td>
+			            <td width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Soot Loading ASTM Soot (% w/w)</td>
+			            <td width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Sulfate by products ASTM</td>
+			            <td width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Water (ASTM Petroluem  Lubricant)</td>
+			        </tr>
+			        <tr>
+			            <td width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="nitration" name="nitration" style="width:195px; height:15px" value="<%=infoMap.get("NITRATION")%>"></td>
+			            <td width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="sootloading" name="sootloading" style="width:195px; height:15px" value="<%=infoMap.get("SOOTLOADING")%>"></td>
+			            <td width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="sulfate" name="sulfate" style="width:195px; height:15px" value="<%=infoMap.get("SULFATE")%>"></td>
+			            <td width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="waterastm" name="waterastm" style="width:195px; height:15px" value="<%=infoMap.get("WATERASTM")%>"></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+    
+    <table width="100%" align="center">
+        <tr>
+            <td height="20"></td>
+        </tr>
+    </table>
+    
+    <table class="tableTypeB" id="conditiontbl" name="conditiontbl" width="100%" align="center" style="display:none;">
+        <tr>
+            <td colspan="4" style="font-size:12px;" align="center"><b>2. Oil Condition 항목</b></td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Viscosity (cSt)</b></td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <table width="100%" align="center">
+                    <tr>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Viscosity@40℃</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Viscosity@100℃</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Viscosity index</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="viscosity40" name="viscosity40" style="width:266px; height:15px" value="<%=infoMap.get("VISCOSITY40")%>"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="viscosity100" name="viscosity100" style="width:266px; height:15px" value="<%=infoMap.get("VISCOSITY100")%>"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="viscosityindex" name="viscosityindex" style="width:266px; height:15px" value="<%=infoMap.get("VISCOSITYINDEX")%>"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td width="400" colspan="2" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Acid Number (mgKOH/g)</b></td>
+            <td width="400" colspan="2" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Specific Gravity</b></td>
+        </tr>
+        <tr>
+            <td width="200" style="font-size:12px; height:20px; width:200px; background-color: #cccccc" align="center" valign="bottom">Acid Number</td>
+            <td width="200" style="font-size:12px; height:20px; width:200px;" align="left" valign="bottom"><input type="text" id="acidnumber" name="acidnumber" style="width:200px; height:15px" value="<%=infoMap.get("ACIDNUMBER")%>"></td>
+            <td width="200" style="font-size:12px; height:20px; width:200px; background-color: #cccccc" align="center" valign="bottom">Specific Gravity</td>
+            <td width="200" style="font-size:12px; height:20px; width:200px;" align="left" valign="bottom"><input type="text" id="specificgravity" name="specificgravity" style="width:200px; height:15px" value="<%=infoMap.get("SPECIFICGRAVITY")%>"></td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Remaining Useful Life : RULER (%)</b></td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <table width="100%" align="center">
+                    <tr>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RUL1_Peak1</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RUL2_Peak2</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RUL AREA_TOTAL</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="rul1peak" name="rul1peak" style="width:266px; height:15px" value="<%=infoMap.get("RUL1PEAK")%>"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="rul2peak" name="rul2peak" style="width:266px; height:15px" value="<%=infoMap.get("RUL2PEAK")%>"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="rulareatotal" name="rulareatotal" style="width:266px; height:15px" value="<%=infoMap.get("RULAREATOTAL")%>"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Remaining Useful Life : RULER (%)</b></td>
+        </tr>
+            <td style="font-size:12px; height:20px; background-color: #cccccc;" align="center" valign="bottom">RULER NUMBER</td>
+            <td colspan="3"  style="font-size:12px; height:20px;" align="left" valign="bottom"><input type="text" id="rulernumber" name="rulernumber" style="width:200px; height:15px" value="<%=infoMap.get("RULERNUMBER")%>"></td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Foaming characteristic of oil (ml)</b></td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <table width="100%" align="center">
+                    <tr>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">24℃ (tendency < 450ml)</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">93.5℃ (stability 0ml(Nil))</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">24℃ (stability 0ml(Nil))</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="tendency" name="tendency" style="width:266px; height:15px" value="<%=infoMap.get("TENDENCY")%>"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="stability" name="stability" style="width:266px; height:15px" value="<%=infoMap.get("STABILITY")%>"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="nil" name="nil" style="width:266px; height:15px" value="<%=infoMap.get("NIL")%>"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td width="400" colspan="2" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Water separability (min)</b></td>
+            <td width="400" colspan="2" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Pour point (Celsius)</b></td>
+        </tr>
+        <tr>
+            <td width="200" style="font-size:12px; height:20px; width:200px; background-color: #cccccc" align="center" valign="bottom">Water separability</td>
+            <td width="200" style="font-size:12px; height:20px; width:200px;" align="left" valign="bottom"><input type="text" id="waterseparability" name="waterseparability" style="width:200px; height:15px" value="<%=infoMap.get("WATERSEPARABILITY")%>"></td>
+            <td width="200" style="font-size:12px; height:20px; width:200px; background-color: #cccccc" align="center" valign="bottom">Pour point </td>
+            <td width="200" style="font-size:12px; height:20px; width:200px;" align="left" valign="bottom"><input type="text" id="pourpoint" name="pourpoint" style="width:200px; height:15px" value="<%=infoMap.get("POURPOINT")%>"></td>
+        </tr>
+        <tr>
+            <td width="400" colspan="2" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Flash point (Celsius) ; Clevenland open cup</b></td>
+            <td width="400" colspan="2" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Flash point (Celsius) ; Pensky-martens closed cup</b></td>
+        </tr>
+        <tr>
+            <td width="200" style="font-size:12px; height:20px; width:200px; background-color: #cccccc" align="center" valign="bottom">Flash point</td>
+            <td width="200" style="font-size:12px; height:20px; width:200px;" align="left" valign="bottom"><input type="text" id="flashpoint" name="flashpoint" style="width:200px; height:15px" value="<%=infoMap.get("FLASHPOINT")%>"></td>
+            <td width="200" style="font-size:12px; height:20px; width:200px; background-color: #cccccc" align="center" valign="bottom">Flash point</td>
+            <td width="200" style="font-size:12px; height:20px; width:200px;" align="left" valign="bottom"><input type="text" id="flashpoint2" name="flashpoint2" style="width:200px; height:15px" value="<%=infoMap.get("FLASHPOINT2")%>"></td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Elemental analysis : Additives Metals(ppm)</b></td>
+        </tr>
+        <tr>
+            <td colspan="4" align="center">
+                <table width="100%" align="center">
+                    <tr>
+                        <td colspan="2" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Magnesium (Mg)</td>
+                        <td colspan="2" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Calcium (Ca)</td>
+                        <td colspan="2" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Barium (Ba)</td>
+                    </tr>
+                    <tr>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                    </tr>
+                    <tr>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="mgrde" name="mgrde" style="width:130px; height:15px" value="<%=infoMap.get("MGRDE")%>"></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="mgrfs" name="mgrfs" style="width:130px; height:15px" value="<%=infoMap.get("MGRFS")%>"></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="carde" name="carde" style="width:130px; height:15px" value="<%=infoMap.get("CARDE")%>"></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="carfs" name="carfs" style="width:130px; height:15px" value="<%=infoMap.get("CARFS")%>"></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="barde" name="barde" style="width:130px; height:15px" value="<%=infoMap.get("BARDE")%>"></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="barfs" name="barfs" style="width:130px; height:15px" value="<%=infoMap.get("BARFS")%>"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Phosphorus (P)</td>
+                        <td colspan="2" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Zinc (Zn)</td>
+                        <td colspan="2" style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                    </tr>
+                    <tr>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                    </tr>
+                    <tr>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="prde" name="prde" style="width:130px; height:15px" value="<%=infoMap.get("PRDE")%>"></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="prfs" name="prfs" style="width:130px; height:15px" value="<%=infoMap.get("PRFS")%>"></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="znrde" name="znrde" style="width:130px; height:15px" value="<%=infoMap.get("ZNRDE")%>"></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="znrfs" name="znrfs" style="width:130px; height:15px" value="<%=infoMap.get("ZNRFS")%>"></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>FT-IR : Additives Abs)</b></td>
+        </tr>
+        <tr>
+            <td width="200" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Antiwear ASTM</td>
+            <td width="200" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Phenol Antioxidant</td>
+            <td width="200" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Rust Inhibitor(Succinic acid)</td>
+            <td width="200" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Dispersant(Succinimide)</td>
+        </tr>
+        <tr>
+            <td width="200" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="antiwater" name="antiwater" style="width:195px; height:15px" value="<%=infoMap.get("ANTIWATER")%>"></td>
+            <td width="200" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="phenol" name="phenol" style="width:195px; height:15px" value="<%=infoMap.get("PHENOL")%>"></td>
+            <td width="200" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="rust" name="rust" style="width:195px; height:15px" value="<%=infoMap.get("RUST")%>"></td>
+            <td width="200" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="dispersant" name="dispersant" style="width:195px; height:15px" value="<%=infoMap.get("DISPERSANT")%>"></td>
+        </tr>
+    </table>
+    
+    <table width="100%" align="center">
+        <tr>
+            <td height="20"></td>
+        </tr>
+    </table>
+    
+    <table class="tableTypeB" id="weartbl" name="weartbl" width="100%" align="center" style="display:none;">
+        <tr>
+            <td colspan="4" style="font-size:12px;" align="center"><b>3. Wear 항목</b></td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Elemental analysis ; Wear metals(ppm)</b></td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <table width="100%" align="center">
+                    <tr>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Iron (Fe)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Chrome (Cr)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Lead (Pb)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Copper (Cu)</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="ferde" name="ferde" style="width:95px; height:15px" value="<%=infoMap.get("FERDE")%>"></td>
+                        <td style="font-size:12px; height:20px;:" align="center" valign="bottom"><input type="text" id="ferfs" name="ferfs" style="width:95px; height:15px" value="<%=infoMap.get("FERFS")%>"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="crrde" name="crrde" style="width:95px; height:15px" value="<%=infoMap.get("CRRDE")%>"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="crrfs" name="crrfs" style="width:95px; height:15px" value="<%=infoMap.get("CRRFS")%>"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="pbrde" name="pbrde" style="width:95px; height:15px" value="<%=infoMap.get("PBRDE")%>"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="pbrfs" name="pbrfs" style="width:95px; height:15px" value="<%=infoMap.get("PBRFS")%>"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="curde" name="curde" style="width:95px; height:15px" value="<%=infoMap.get("CURDE")%>"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="curfs" name="curfs" style="width:95px; height:15px" value="<%=infoMap.get("CURFS")%>"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Tin (Sn)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Aluminum (Al)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Nickel (Ni)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Silver (Ag)</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="snrde" name="snrde" style="width:95px; height:15px" value="<%=infoMap.get("SNRDE")%>"></td>
+                        <td style="font-size:12px; height:20px;:" align="center" valign="bottom"><input type="text" id="snrfs" name="snrfs" style="width:95px; height:15px" value="<%=infoMap.get("SNRFS")%>"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="alrde" name="alrde" style="width:95px; height:15px" value="<%=infoMap.get("ALRDE")%>"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="alrfs" name="alrfs" style="width:95px; height:15px" value="<%=infoMap.get("ALRFS")%>"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="nirde" name="nirde" style="width:95px; height:15px" value="<%=infoMap.get("NIRDE")%>"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="nirfs" name="nirfs" style="width:95px; height:15px" value="<%=infoMap.get("NIRFS")%>"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="agrde" name="agrde" style="width:95px; height:15px" value="<%=infoMap.get("AGRDE")%>"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="agrfs" name="agrfs" style="width:95px; height:15px" value="<%=infoMap.get("AGRFS")%>"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Molybdenum (Mo)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Titanium (Ti)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Vanadium (V)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="morde" name="morde" style="width:95px; height:15px" value="<%=infoMap.get("MORDE")%>"></td>
+                        <td style="font-size:12px; height:20px;:" align="center" valign="bottom"><input type="text" id="morfs" name="morfs" style="width:95px; height:15px" value="<%=infoMap.get("MORFS")%>"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="tirde" name="tirde" style="width:95px; height:15px" value="<%=infoMap.get("TIRDE")%>"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="tirfs" name="tirfs" style="width:95px; height:15px" value="<%=infoMap.get("TIRFS")%>"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="vrde" name="vrde" style="width:95px; height:15px" value="<%=infoMap.get("VRDE")%>"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="vrfs" name="vrfs" style="width:95px; height:15px" value="<%=infoMap.get("VRFS")%>"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Particle Quantifier ; Ferrous Density</b></td>
+        </tr>
+            <td style="font-size:12px; height:20px; background-color: #cccccc;" align="center" valign="bottom">PQ index</td>
+            <td colspan="3"  style="font-size:12px; height:20px;" align="left" valign="bottom"><input type="text" id="pqindex" name="pqindex" style="width:200px; height:15px" value="<%=infoMap.get("PQINDEX")%>"></td>
+        </tr>
+    </table>
+    <table width="100%" align="center">
+        <tr>
+            <td height="20"></td>
+        </tr>
+    </table>
+    <table width="100%" align="center">
+        <tr>
+            <td align="center"><input name="button" class="btn_style4" id="button" type="submit" value="확인"/></td>
+        </tr>
+    </table>
+    
+    </form>
+<%
+	} else {
+%>
+    <form name="infoForm" action="/info/infoWriteProcess.info" method="POST" enctype="multipart/form-data">
+    <input type="hidden" id="type" name="type" value="<%=type%>">
+    <input type="hidden" id="idx" name="idx" value="<%=idx%>">
+    <table class="tableTypeB" width="100%" align="center">
+        <tr>
+            <th>업체명</th>
+            <th>장치타입</th>
+            <th>시료명</th>
+            <th>샘플링포인트</th>
+            <th>유종</th>
+            <th>담당자</th>
+        </tr>
+        <tr>
+        <%
+        	List<Map> customerList = (List)request.getAttribute("customerList");
+        %>
+            <td style="font-size:12px;" align="center">
+                <select name="companyIdx" id="companyIdx">
+                    <option value=""></option>
+                    <%
+                        if(customerList.size() <= 0) {
+                    %>
+                    
+                    <%
+                        } else {
+                        	for(Map item : customerList) {
+                    %>
+                        <option value="<%=item.get("IDX")%>"><%=item.get("COMPANYNAME") %></option>
+                    <%
+                        	}
+                        }
+                    %>
+                    
+                </select>
+            </td>
+            <td style="font-size:12px;" align="center">
+                <select id="specIdx" name="specIdx"> 
+                </select>
+            </td>
+            <td style="font-size:12px;" align="center">
+                <select id="sampleIdx" name="sampleIdx">
+                </select>
+            </td>
+            <td style="font-size:12px;" align="center"><input type="text" id="smplpoint" name="smplpoint" style="width:80px; height:15px" value=""></td>
+            <td style="font-size:12px;" align="center"><input type="text" id="oilType" name="oilType" style="width:80px; height:15px" value=""></td>
+            <td style="font-size:12px;" align="center"><input type="text" id="authorizer" name="authorizer" style="width:80px; height:15px" value=""></td>
+        </tr>
+<!--         <tr> -->
+<!--             <td colspan="5"> -->
+<!--                 <table width="100%" align="center"> -->
+<!--                     <tr> -->
+<!--                         <td style="font-size:12px;" align="center">샘플링포인트</td> -->
+<!--                         <td style="font-size:12px;" align="center"></td> -->
+<!--                     </tr> -->
+<!--                 </table> -->
+<!--             </td> -->
+<!--         </tr> -->
+    </table>
+    <table class="tableTypeB" width="100%" align="center">
+        <tr>
+            <td style="font-size:12px;" align="center" width="33%"><input type="checkbox" id="contamination" name="contamination" value="open"">1. Contamination</td>
+            <td style="font-size:12px;" align="center" width="33%"><input type="checkbox" id="condition" name="condition" value="open"">2. Oil Condition</td>
+            <td style="font-size:12px;" align="center" width="33%"><input type="checkbox" id="wear" name="wear" value="open"">3. Wear</td>
+        </tr>
+    </table>
+    <table class="tableTypeB" cellpadding="0" cellspacing="1" border="0" id="contaminationtbl" name="contiminationtbl" width="100%" align="center" style="display:none;">
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="center" valign="bottom"><b>1. Contamination 항목</b></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Particle Count ; Laser Particle counter</b></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:20px;" align="left" valign="bottom">- Class</td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">ISO 4406</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="iso" name="iso" style="width:80px; height:15px"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">NAS 1638</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="nas" name="nas" style="width:80px; height:15px"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">SAE AS 4059</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="sae" name="sae" style="width:80px; height:15px"></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:20px;" align="left" valign="bottom">- 입자크기별(㎛) 개수(Number of particles/ml)</td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>4um (c)</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="p4um" name="p4um" style="width:80px; height:15px"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>6um (c)</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="p6um" name="p6um" style="width:80px; height:15px"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>14um (c)</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="p14um" name="p14um" style="width:80px; height:15px"></td>
+			        </tr>
+			        <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>21um (c)</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="p21um" name="p21um" style="width:80px; height:15px"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>38um (c)</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="p38um" name="p38um" style="width:80px; height:15px"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>70um</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="p70um" name="p70um" style="width:80px; height:15px"></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>>20um Wear Mode</b></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:20px;" align="left" valign="bottom">- Cutting Wear</td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Counts</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="ccount" name="ccount" style="width:80px; height:15px"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Average</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="caverage" name="caverage" style="width:80px; height:15px"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>STD</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="cstd" name="cstd" style="width:80px; height:15px"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Max size</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="cmaxsize" name="cmaxsize" style="width:80px; height:15px"></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:20px;" align="left" valign="bottom">- Severe Sliding Wear</td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Counts</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="scount" name="scount" style="width:80px; height:15px"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Average</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="saverage" name="saverage" style="width:80px; height:15px"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>STD</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="sstd" name="sstd" style="width:80px; height:15px"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Max size</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="smaxsize" name="smaxsize" style="width:80px; height:15px"></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:20px;" align="left" valign="bottom">- Fatigue</td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Counts</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="fcount" name="fcount" style="width:80px; height:15px"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Average</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="faverage" name="faverage" style="width:80px; height:15px"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>STD</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="fstd" name="fstd" style="width:80px; height:15px"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Max size</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="fmaxsize" name="fmaxsize" style="width:80px; height:15px"></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:20px;" align="left" valign="bottom">- Nonmetallic Particles</td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Counts</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="ncount" name="ncount" style="width:80px; height:15px"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Average</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="naverage" name="naverage" style="width:80px; height:15px"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>STD</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="nstd" name="nstd" style="width:80px; height:15px"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Max size</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="nmaxsize" name="nmaxsize" style="width:80px; height:15px"></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+                        <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="center">Cutting Wear</td>
+                        <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="center">Fatigue Wear</td>
+                        <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="center">Nonmetalic Particles</td>
+                    </tr>
+                    <tr>
+                        <td><input type="file" id="ucuttingWear" name="ucuttingWear"></td>
+                        <td><input type="file" id="ufatigueWear" name="ufatigueWear"></td>
+                        <td><input type="file" id="unonmetalicparticles" name="unonmetalicparticles"></td>
+                    </tr>
+                    <tr>
+                        <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="center">Severe Sliding Wear</td>
+                        <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="center">Water</td>
+                        <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="center">Fiber</td>
+                    </tr>
+                    <tr>
+                        <td><input type="file" id="usevereSlidingWear" name="usevereSlidingWear"></td>
+                        <td><input type="file" id="uwater" name="uwater"></td>
+                        <td><input type="file" id="ufiber" name="ufiber"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Particle Contaminaion by the counting method using an optical microscope</b></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:20px;" align="left" valign="bottom">- Class</td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">ISO 4406</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="iso2" name="iso2" style="width:80px; height:15px"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">NAS 1638</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="nas" name="nas2" style="width:80px; height:15px"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">SAE AS 4059</td>
+			            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="sae" name="sae2" style="width:80px; height:15px"></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:20px;" align="left" valign="bottom">- 입자크기별(㎛) 개수(Number of particles/ml)</td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+	            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">5-15um</td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="5" name="5" style="width:80px; height:15px"></td>
+	            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">15-25um</td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="15" name="15" style="width:80px; height:15px"></td>
+	            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">25-50um</td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="25" name="25" style="width:80px; height:15px"></td>
+	            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">50-100um</td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="50" name="50" style="width:80px; height:15px"></td>
+	        </tr>
+	        <tr>
+	            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>100um</td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="100" name="100" style="width:80px; height:15px"></td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+	            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+	        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+                        <td colspan="3" width="200" style="font-size:12px; background-color: #cccccc" align="center">Particle Information</td>
+                    </tr>
+                    <tr>
+                        <td><input type="file" id="uParticleInfo1" name="uParticleInfo1"></td>
+                        <td><input type="file" id="uParticleInfo2" name="uParticleInfo2"></td>
+                        <td><input type="file" id="uParticleInfo3" name="uParticleInfo3"></td>        
+                    </tr>
+                    <tr>
+                        <td><input type="file" id="uParticleInfo4" name="uParticleInfo4"></td>
+                        <td><input type="file" id="uParticleInfo5" name="uParticleInfo5"></td>
+                        <td></td>
+                    </tr>
+                </table>
+                <table width="100%" align="center">
+                    <tr>
+                        <td width="200" style="font-size:12px; background-color: #cccccc" align="center">Membrane Patch Image1</td>
+                        <td><input type="file" id="uMembranePatchImg1" name="uMembranePatchImg1"></td>
+                    </tr>
+                </table>
+                <table width="100%" align="center">
+                    <tr>
+                        <td colspan="3" width="200" style="font-size:12px; background-color: #cccccc" align="center">Membrane Patch Image2 (확대)</td>
+                    </tr>
+                    <tr>
+                        <td valign="top"><input type="file" id="uMembranePatchImg2" name="uMembranePatchImg2"></td>
+                        <td valign="top"><input type="file" id="uMembranePatchImg3" name="uMembranePatchImg3"></td>
+                        <td valign="top"><input type="file" id="uMembranePatchImg4" name="uMembranePatchImg4"></td>
+                    </tr>
+                    <tr>
+                        <td valign="top"><input type="file" id="uMembranePatchImg5" name="uMembranePatchImg5"></td>
+                        <td valign="top"><input type="file" id="uMembranePatchImg6" name="uMembranePatchImg6"></td>
+                        <td valign="top"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Water Content (ppm)</b></td>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Chlorine (ppm)</b></td>
+        </tr>
+        <tr>
+            <td width="200" height="20" style="font-size:12px; background-color: #cccccc" align="right">Water</td>
+            <td colspan="3" height="20" style="font-size:12px;" align="left"><input type="text" id="water" name="water" style="width:80px; height:15px"></td>
+            <td width="200" height="20" style="font-size:12px; background-color: #cccccc" align="right">Chlorine</td>
+            <td colspan="3" height="20" style="font-size:12px;" align="left"><input type="text" id="chlorine" name="chlorine" style="width:80px; height:15px"></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Membrane Patch Colorimetry</b></td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">iMPC Value</td>
+			            <td height="20" style="font-size:12px; " align="left"><input type="text" id="impcval" name="impcval" style="width:80px; height:15px"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">MPC Value</td>
+			            <td height="20" style="font-size:12px;" align="left"><input type="text" id="mpcval" name="mpcval" style="width:80px; height:15px"></td>
+			            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">평가</td>
+			            <td height="20" style="font-size:12px;" align="left"><input type="text" id="eval" name="eval" style="width:80px; height:15px"></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">Patch</td>
+            <td colspan="3" height="20" style="font-size:12px; " align="left"><input type="file" id="uPatch" name="uPatch"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">Patch 확대</td>
+            <td colspan="3" height="20" style="font-size:12px;" align="left"><input type="file" id="uPatchExt" name="uPatchExt"></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>MPC for Phosphate Ester Fluids (Patch wt(mg))</b></td>
+        </tr>
+        <tr>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right" valign="bottom">MPC weight</td>
+            <td width="100" height="20" style="font-size:12px; " align="left"><input type="text" id="mpcweight" name="mpcweight" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Patch test</b></td>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Insolubles test for Phosphate Ester Fluids</b></td>
+        </tr>
+        <tr>
+            <td colspan="4" width="400" height="20" style="font-size:12px; " align="left"><input type="file" id="uPatchTest" name="uPatchTest"></td>
+            <td colspan="4" width="400" height="20" style="font-size:12px;" align="left"><input type="file" id="uSludge" name="uSludge"></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Blotter spot test</b></td>
+        </tr>
+        <tr>
+            <td colspan="8" width="400" height="20" style="font-size:12px; " align="left"><input type="file" id="uBlotter" name="uBlotter"></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Elemental analysis ; Contamination Metals(ppm)</b></td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+                        <td colspan=2" height="20" style="font-size:12px; background-color: #cccccc" align="center">Silicon (Si)</td>
+                        <td colspan=2" height="20" style="font-size:12px; background-color: #cccccc" align="center">Boron (B)</td>
+                        <td colspan=2" height="20" style="font-size:12px; background-color: #cccccc" align="center">Sodium (Na)</td>
+                    </tr>
+                    <tr>
+                        <td height="20" style="font-size:12px; background-color: #cccccc" align="center">RDE</td>
+                        <td height="20" style="font-size:12px; background-color: #cccccc" align="center">RFS</td>
+                        <td height="20" style="font-size:12px; background-color: #cccccc" align="center">RDE</td>
+                        <td height="20" style="font-size:12px; background-color: #cccccc" align="center">RFS</td>
+                        <td height="20" style="font-size:12px; background-color: #cccccc" align="center">RDE</td>
+                        <td height="20" style="font-size:12px; background-color: #cccccc" align="center">RFS</td>
+                    </tr>
+                    <tr>
+                        <td width="133" height="20" style="font-size:12px; " align="left"><input type="text" id="siliconrde" name="siliconrde" style="width:130px; height:15px"></td>
+                        <td width="133" height="20" style="font-size:12px; " align="left"><input type="text" id="siliconrfs" name="siliconrfs" style="width:130px; height:15px"></td>
+                        <td width="133" height="20" style="font-size:12px; " align="left"><input type="text" id="boronrde" name="boronrde" style="width:130px; height:15px"></td>
+                        <td width="133" height="20" style="font-size:12px; " align="left"><input type="text" id="boronrfs" name="boronrfs" style="width:130px; height:15px"></td>
+                        <td width="133" height="20" style="font-size:12px; " align="left"><input type="text" id="sodiumrde" name="sodiumrde" style="width:130px; height:15px"></td>
+                        <td width="133" height="20" style="font-size:12px; " align="left"><input type="text" id="sodiumrfs" name="sodiumrfs" style="width:130px; height:15px"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>FT-IR ; Contamination (Abs)</b></td>
+        </tr>
+        <tr>
+            <td colspan="8" align="center">
+                <table width="100%" align="center">
+                    <tr>
+			            <td width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Oxidation ASTM</td>
+			            <td width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Detergent(sulfonate)</td>
+			            <td width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Diesel ASTM</td>
+			            <td width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Ethylene Glycol Coolant ASTM</td>
+			        </tr>
+			        <tr>
+			            <td width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="oxidation" name="oxidation" style="width:195px; height:15px"></td>
+			            <td width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="detergent" name="detergent" style="width:195px; height:15px"></td>
+			            <td width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="diesel" name="diesel" style="width:195px; height:15px"></td>
+			            <td width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="ethylene" name="ethylene" style="width:195px; height:15px"></td>
+			        </tr>
+			        <tr>
+			            <td width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Nitration ASTM</td>
+			            <td width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Soot Loading ASTM Soot (% w/w)</td>
+			            <td width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Sulfate by products ASTM</td>
+			            <td width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Water (ASTM Petroluem  Lubricant)</td>
+			        </tr>
+			        <tr>
+			            <td width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="nitration" name="nitration" style="width:195px; height:15px"></td>
+			            <td width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="sootloading" name="sootloading" style="width:195px; height:15px"></td>
+			            <td width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="sulfate" name="sulfate" style="width:195px; height:15px"></td>
+			            <td width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="waterastm" name="waterastm" style="width:195px; height:15px"></td>
+			        </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+    
+    <table width="100%" align="center">
+        <tr>
+            <td height="20"></td>
+        </tr>
+    </table>
+    
+    <table class="tableTypeB" id="conditiontbl" name="conditiontbl" width="100%" align="center" style="display:none;">
+        <tr>
+            <td colspan="4" style="font-size:12px;" align="center"><b>2. Oil Condition 항목</b></td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Viscosity (cSt)</b></td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <table width="100%" align="center">
+                    <tr>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Viscosity@40℃</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Viscosity@100℃</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Viscosity index</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="viscosity40" name="viscosity40" style="width:266px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="viscosity100" name="viscosity100" style="width:266px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="viscosityindex" name="viscosityindex" style="width:266px; height:15px"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td width="400" colspan="2" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Acid Number (mgKOH/g)</b></td>
+            <td width="400" colspan="2" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Specific Gravity</b></td>
+        </tr>
+        <tr>
+            <td width="200" style="font-size:12px; height:20px; width:200px; background-color: #cccccc" align="center" valign="bottom">Acid Number</td>
+            <td width="200" style="font-size:12px; height:20px; width:200px;" align="left" valign="bottom"><input type="text" id="acidnumber" name="acidnumber" style="width:200px; height:15px"></td>
+            <td width="200" style="font-size:12px; height:20px; width:200px; background-color: #cccccc" align="center" valign="bottom">Specific Gravity</td>
+            <td width="200" style="font-size:12px; height:20px; width:200px;" align="left" valign="bottom"><input type="text" id="specificgravity" name="specificgravity" style="width:200px; height:15px"></td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Remaining Useful Life; RULER (%)</b></td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <table width="100%" align="center">
+                    <tr>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RUL1_Peak1</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RUL2_Peak2</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RUL AREA_TOTAL</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="rul1peak" name="rul1peak" style="width:266px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="rul2peak" name="rul2peak" style="width:266px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="rulareatotal" name="rulareatotal" style="width:266px; height:15px"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Remaining Useful Life; RULER (%)</b></td>
+        </tr>
+            <td style="font-size:12px; height:20px; background-color: #cccccc;" align="center" valign="bottom">RULER NUMBER</td>
+            <td colspan="3"  style="font-size:12px; height:20px;" align="left" valign="bottom"><input type="text" id="rulernumber" name="rulernumber" style="width:200px; height:15px"></td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Foaming characteristic of oil (ml)</b></td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <table width="100%" align="center">
+                    <tr>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">24℃ (tendency < 450ml)</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">93.5℃ (stability 0ml(Nil))</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">24℃ (stability 0ml(Nil))</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="tendency" name="tendency" style="width:266px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="stability" name="stability" style="width:266px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="nil" name="nil" style="width:266px; height:15px"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td width="400" colspan="2" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Water separability (min)</b></td>
+            <td width="400" colspan="2" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Pour point (Celsius)</b></td>
+        </tr>
+        <tr>
+            <td width="200" style="font-size:12px; height:20px; width:200px; background-color: #cccccc" align="center" valign="bottom">Water separability</td>
+            <td width="200" style="font-size:12px; height:20px; width:200px;" align="left" valign="bottom"><input type="text" id="waterseparability" name="waterseparability" style="width:200px; height:15px"></td>
+            <td width="200" style="font-size:12px; height:20px; width:200px; background-color: #cccccc" align="center" valign="bottom">Pour point </td>
+            <td width="200" style="font-size:12px; height:20px; width:200px;" align="left" valign="bottom"><input type="text" id="pourpoint" name="pourpoint" style="width:200px; height:15px"></td>
+        </tr>
+        <tr>
+            <td width="400" colspan="2" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Flash point (Celsius) ; Clevenland open cup</b></td>
+            <td width="400" colspan="2" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Flash point (Celsius) ; Pensky-martens closed cup</b></td>
+        </tr>
+        <tr>
+            <td width="200" style="font-size:12px; height:20px; width:200px; background-color: #cccccc" align="center" valign="bottom">Flash point</td>
+            <td width="200" style="font-size:12px; height:20px; width:200px;" align="left" valign="bottom"><input type="text" id="flashpoint" name="flashpoint" style="width:200px; height:15px"></td>
+            <td width="200" style="font-size:12px; height:20px; width:200px; background-color: #cccccc" align="center" valign="bottom">Flash point</td>
+            <td width="200" style="font-size:12px; height:20px; width:200px;" align="left" valign="bottom"><input type="text" id="flashpoint2" name="flashpoint2" style="width:200px; height:15px"></td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Elemental analysis ; Additives Metals(ppm)</b></td>
+        </tr>
+        <tr>
+            <td colspan="4" align="center">
+                <table width="100%" align="center">
+                    <tr>
+                        <td colspan="2" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Magnesium (Mg)</td>
+                        <td colspan="2" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Calcium (Ca)</td>
+                        <td colspan="2" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Barium (Ba)</td>
+                    </tr>
+                    <tr>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                    </tr>
+                    <tr>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="mgrde" name="mgrde" style="width:130px; height:15px"></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="mgrfs" name="mgrfs" style="width:130px; height:15px"></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="carde" name="carde" style="width:130px; height:15px"></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="carfs" name="carfs" style="width:130px; height:15px"></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="barde" name="barde" style="width:130px; height:15px"></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="barfs" name="barfs" style="width:130px; height:15px"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Phosphorus (P)</td>
+                        <td colspan="2" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Zinc (Zn)</td>
+                        <td colspan="2" style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                    </tr>
+                    <tr>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td width="133" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                    </tr>
+                    <tr>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="prde" name="prde" style="width:130px; height:15px"></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="prfs" name="prfs" style="width:130px; height:15px"></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="znrde" name="znrde" style="width:130px; height:15px"></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="znrfs" name="znrfs" style="width:130px; height:15px"></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                        <td width="133" style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>FT-IR : Additives Abs)</b></td>
+        </tr>
+        <tr>
+            <td width="200" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Antiwear ASTM</td>
+            <td width="200" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Phenol Antioxidant</td>
+            <td width="200" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Rust Inhibitor(Succinic acid)</td>
+            <td width="200" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Dispersant(Succinimide)</td>
+        </tr>
+        <tr>
+            <td width="200" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="antiwater" name="antiwater" style="width:195px; height:15px"></td>
+            <td width="200" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="phenol" name="phenol" style="width:195px; height:15px"></td>
+            <td width="200" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="rust" name="rust" style="width:195px; height:15px"></td>
+            <td width="200" style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="dispersant" name="dispersant" style="width:195px; height:15px"></td>
+        </tr>
+    </table>
+    
+    <table width="100%" align="center">
+        <tr>
+            <td height="20"></td>
+        </tr>
+    </table>
+    
+    <table class="tableTypeB" id="weartbl" name="weartbl" width="100%" align="center" style="display:none;">
+        <tr>
+            <td colspan="4" style="font-size:12px;" align="center"><b>3. Wear 항목</b></td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Elemental analysis ; Wear metals(ppm)</b></td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <table width="100%" align="center">
+                    <tr>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Iron (Fe)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Chrome (Cr)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Lead (Pb)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Copper (Cu)</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="ferde" name="ferde" style="width:95px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;:" align="center" valign="bottom"><input type="text" id="ferfs" name="ferfs" style="width:95px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="crrde" name="crrde" style="width:95px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="crrfs" name="crrfs" style="width:95px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="pbrde" name="pbrde" style="width:95px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="pbrfs" name="pbrfs" style="width:95px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="curde" name="curde" style="width:95px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="curfs" name="curfs" style="width:95px; height:15px"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Tin (Sn)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Aluminum (Al)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Nickel (Ni)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Silver (Ag)</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="snrde" name="snrde" style="width:95px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;:" align="center" valign="bottom"><input type="text" id="snrfs" name="snrfs" style="width:95px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="alrde" name="alrde" style="width:95px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="alrfs" name="alrfs" style="width:95px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="nirde" name="nirde" style="width:95px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="nirfs" name="nirfs" style="width:95px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="agrde" name="agrde" style="width:95px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="agrfs" name="agrfs" style="width:95px; height:15px"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Molybdenum (Mo)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Titanium (Ti)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">Vanadium (V)</td>
+                        <td colspan="2" width="25%" style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RDE</td>
+                        <td style="font-size:12px; height:20px; background-color: #cccccc" align="center" valign="bottom">RFS</td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="morde" name="morde" style="width:95px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;:" align="center" valign="bottom"><input type="text" id="morfs" name="morfs" style="width:95px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="tirde" name="tirde" style="width:95px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="tirfs" name="tirfs" style="width:95px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="vrde" name="vrde" style="width:95px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"><input type="text" id="vrfs" name="vrfs" style="width:95px; height:15px"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                        <td style="font-size:12px; height:20px;" align="center" valign="bottom"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Particle Quantifier : Ferrous Density</b></td>
+        </tr>
+            <td style="font-size:12px; height:20px; background-color: #cccccc;" align="center" valign="bottom">PQ index</td>
+            <td colspan="3"  style="font-size:12px; height:20px;" align="left" valign="bottom"><input type="text" id="pqindex" name="pqindex" style="width:200px; height:15px"></td>
+        </tr>
+    </table>
+    <table width="100%" align="center">
+        <tr>
+            <td height="20"></td>
+        </tr>
+    </table>
+    <table width="100%" align="center">
+        <tr>
+            <td align="center"><!--input type="submit" value="확인"--><input name="button" class="btn_style4" id="button" type="submit" value="확인"/></td>
+        </tr>
+    </table>
+    
+    </form>
+<%
+	}
+%>
+</body>
+</html>

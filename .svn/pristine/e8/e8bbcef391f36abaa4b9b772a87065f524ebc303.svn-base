@@ -1,0 +1,155 @@
+package com.eye2web.infosys.controller;
+
+import java.util.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.eye2web.infosys.service.SampleService;
+
+@Controller
+public class SampleController
+{
+	private static Logger logger = Logger.getLogger(SampleController.class);
+	
+	@Autowired
+	private SampleService sampleService;
+
+	/**
+	 * @desc 리스트 보기
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping("/sample/list.info")
+	public ModelAndView list(HttpServletRequest request, HttpServletResponse response)
+	{
+		List<Map> list = sampleService.getList();
+		
+		ModelAndView mav = new ModelAndView();
+		mav.setViewName("/sample/list");
+		mav.addObject("result", list);
+		return mav;
+	}
+	
+	/**
+	 * @desc 글 작성
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	//@SuppressWarnings("null")
+	@RequestMapping("/sample/write.info")
+	public ModelAndView write(HttpServletRequest request, HttpServletResponse response)
+	{
+		String idx = "";
+		int tmpidx = 0;
+		Map<String, Object> modifyMap = null;
+		ModelAndView mav = new ModelAndView();
+		
+		idx = request.getParameter("idx");
+		if(idx == null || idx == "" || idx.length() <= 0){				
+			mav.addObject("result", modifyMap);
+			mav.addObject("idx", "");
+			mav.setViewName("/sample/write");
+		} else {
+			tmpidx = Integer.parseInt(idx);
+			modifyMap = sampleService.getView(tmpidx);
+			
+			mav.setViewName("/sample/write");
+			mav.addObject("result", modifyMap);
+			mav.addObject("idx", idx);
+		}
+		
+		return mav;
+	}
+	
+	/**
+	 * @desc 글 내용 보기
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping("/sample/view.info")
+	public ModelAndView view(HttpServletRequest request, HttpServletResponse response)
+	{
+		String idx = "";
+		int tmpidx = 0;
+		ModelAndView mav = new ModelAndView();
+		
+		idx = request.getParameter("idx");
+		if (idx != null || idx.length() != 0){
+			tmpidx = Integer.parseInt(idx);
+
+			Map<String, Object> resultMap = sampleService.getView(tmpidx);			
+			mav.setViewName("/sample/view");
+			mav.addObject("idx", idx);
+			mav.addObject("result", resultMap);
+		}
+		
+		return mav;
+	}
+	
+	/**
+	 * @desc 글 입력
+	 * @param request
+	 * @param response
+	 */
+	@RequestMapping("/sample/insert.info")
+	public ModelAndView insert(HttpServletRequest request, HttpServletResponse response)
+	{
+		String title = request.getParameter("title");
+		String contents = request.getParameter("contents");
+		String writeName = request.getParameter("writeName");
+		String passwd = request.getParameter("passwd");
+		String idx = request.getParameter("idx");
+		
+		Map<String, Object> insertMap = new HashMap<String, Object>();
+		
+		insertMap.put("title", title);
+		insertMap.put("contents", contents);
+		insertMap.put("writeName", writeName);
+		insertMap.put("passwd", passwd);
+		
+		if(idx == null || idx == "" || idx.length() <= 0) {
+			this.sampleService.insertItem(insertMap);
+		} else {
+			int tmpidx = Integer.parseInt(idx);
+			insertMap.put("idx", tmpidx);
+			this.sampleService.updateItem(insertMap);
+		}
+				
+		return new ModelAndView("redirect:/sample/list.info");
+	}
+	
+	/**
+	 * @desc 글 삭제
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping("/sample/delete.info")
+	public ModelAndView delete(HttpServletRequest request, HttpServletResponse response)
+	{
+		int idx = 0;
+		
+		String tmpidx = request.getParameter("idx");
+		
+		idx = Integer.parseInt(tmpidx);
+		
+		Map<String, Object> deleteMap = new HashMap<String, Object>();
+		
+		deleteMap.put("idx", idx);
+		
+		this.sampleService.deleteItem(deleteMap);
+		
+		return new ModelAndView("redirect:/sample/list.info");
+	}
+
+}

@@ -1,0 +1,60 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>    
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>회원 정보 관리</title>
+</head>
+<body>
+    <table witdh="600" align="center">
+        <tr>
+            <td align="center" style="font-size: 14px">회원 정보</td>
+        </tr>
+    </table>
+    <table width="600" align="center">
+        <tr>
+            <td height="25" style="border-color:rgb(999);border:	1px;border-style:solid;font-size:12px" align="center">사용자 ID</td>
+            <td height="25" style="border-color:rgb(999);border:	1px;border-style:solid;font-size:12px" align="center">사용자명</td>
+            <td height="25" style="border-color:rgb(999);border:	1px;border-style:solid;font-size:12px" align="center">메일주소</td>
+            <td height="25" style="border-color:rgb(999);border:	1px;border-style:solid;font-size:12px" align="center">주소</td>
+            <td height="25" style="border-color:rgb(999);border:	1px;border-style:solid;font-size:12px" align="center">전화번호</td>
+            <td height="25" style="border-color:rgb(999);border:	1px;border-style:solid;font-size:12px" align="center">등록일자</td>
+        </tr>
+        <%
+			List<Map> memberList = (List)request.getAttribute("memberList");
+			
+        	if(memberList.size() <= 0) {
+        %>
+            <tr>
+                <td colspan="6" align="center" style="font-size:12px">등록된 내용이 없습니다.</td>
+            </tr>
+        <%
+        	} else {
+        		
+        		for(Map item : memberList) {
+        %>
+            <tr>
+                <td height="22" align="center" style="border-color:rgb(999);border:1px;border-style:solid; font-size:12px"><a href="/member/memberView.info?idx=<%=item.get("IDX")%>" style="text-decoration: none;"><%=item.get("USERID")%></a></td>
+                <td height="22" align="center" style="border-color:rgb(999);border:1px;border-style:solid; font-size:12px"><%=item.get("USERNAME")%></td>
+                <td height="22" align="center" style="border-color:rgb(999);border:1px;border-style:solid; font-size:12px"><%=item.get("EMAIL")%></td>
+                <td height="22" align="center" style="border-color:rgb(999);border:1px;border-style:solid; font-size:12px"><%=item.get("ADDR")%></td>
+                <td height="22" align="center" style="border-color:rgb(999);border:1px;border-style:solid; font-size:12px"><%=item.get("TELNUM")%></td>
+                <td height="22" align="center" style="border-color:rgb(999);border:1px;border-style:solid; font-size:12px"><%=item.get("REGDATE")%></td>
+            </tr>
+        <%
+        	    }
+        	}
+        %>
+    </table>
+    <table width="600" align="center">
+        <tr>
+            <td height="30"></td>
+        </tr>
+        <tr>
+            <td height="22" align="center" style="font-size:12px;"><a href="/member/memberWrite.info" style="text-decoration: none;">회원등록</a></td>
+        </tr>
+    </table>
+</body>
+</html>

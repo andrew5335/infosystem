@@ -1,0 +1,96 @@
+package com.eye2web.infosys.util;
+
+import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.web.multipart.MultipartFile;
+
+public class CommonUtil {
+
+	/**
+	 *
+	 * @param msg
+	 * @param url
+	 * @return
+	 */
+	public Map<String, Object> rtMap(String msg, String url) {
+
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap.put("msg", msg);
+		resultMap.put("url", url);
+
+		return resultMap;
+	}
+
+	/**
+	 * @Description HttpServletRequest to Map
+	 * @param req
+	 * @return
+	 */
+	public Map<String, Object> convertReqToMap(HttpServletRequest req) {
+
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		String strKey = "";
+
+		for (Enumeration e = req.getParameterNames(); e.hasMoreElements();) {
+			strKey = (String)e.nextElement();
+			resultMap.put(strKey, req.getParameter(strKey));
+		}
+
+		return resultMap;
+	}
+
+	/**
+	 * @Description Save file and return save path
+	 * @param upfile
+	 * @param req
+	 * @return
+	 */
+	public String fileUpload(MultipartFile upfile, HttpServletRequest req) {
+
+		String result = "";
+		String filename = "";
+		String filepath = "";
+
+		if(upfile != null) {
+			filename = upfile.getOriginalFilename();
+			System.out.println("File Name : " + filename);
+
+			long today = System.currentTimeMillis();
+			DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+			String todayDate = df.format(today);
+
+			String path = req.getSession().getServletContext().getRealPath("/");
+			System.out.println("Path1 : " + path);
+
+			File dir = new File(path + "/upload/" + todayDate + "/");
+
+			if(!dir.exists()) {
+				dir.mkdir();
+			}
+
+			try {
+				File file = new File(path + "/upload/" + todayDate + "/" + filename);
+				upfile.transferTo(file);
+				filepath = "/upload/" + todayDate + "/" + filename;
+				result = filepath;
+				System.out.println("Save Path : " +  filepath);
+			} catch(Exception e) {
+				e.toString();
+				result = "none";
+			}
+
+		} else {
+			result = "none";
+		}
+
+		return result;
+	}
+
+}

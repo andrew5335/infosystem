@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org/DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!--  -->
+<sqlMap namespace="Customer">
+
+    <select id="getCount" resultClass="java.lang.Integer">
+        SELECT
+            COUNT(*) AS CNT
+        FROM
+            COMPANY
+    </select>
+
+    <select id="getList" resultClass="java.util.HashMap" parameterClass="java.util.HashMap">
+		SELECT
+		  COMPANYNAME
+			, COMPANYDETAIL
+			, MANAGER
+			, PART
+			, RANK
+			, PHONENM1
+			, PHONENM2
+			, EMAIL
+			, FAX
+			, ADDR
+			, IDX
+	    FROM
+	        COMPANY
+	</select>
+	
+	<select id="getList2" resultClass="java.util.HashMap" parameterClass="java.util.HashMap">
+		SELECT
+		  COMPANYNAME
+			, COMPANYDETAIL
+			, MANAGER
+			, PART
+			, RANK
+			, PHONENM1
+			, PHONENM2
+			, EMAIL
+			, FAX
+			, ADDR
+			, IDX
+	    FROM
+	        COMPANY
+	    WHERE
+	        IDX = #companyIdx#
+	</select>
+	
+	<select id="getCustomerInfo" resultClass="java.util.HashMap">
+	    SELECT
+	        COMPANYNAME
+	        , COMPANYDETAIL
+	        , MANAGER
+	        , PART
+	        , RANK
+	        , PHONENM1
+	        , PHONENM2
+	        , EMAIL
+	        , FAX
+	        , ADDR
+	        , PHONENM3
+	        , PHONENM4
+	        , EMAIL2
+	        , FAX2
+	        , SETTLEDATE
+	        , IDX
+	        , COMMENT
+	        , MANAGER2
+	    FROM
+	        COMPANY
+	    WHERE
+	        IDX = #idx#
+	</select>
+	
+	<insert id="insertCustomerInfo" parameterClass="java.util.HashMap">
+	    INSERT INTO
+	        COMPANY
+	        (
+	            COMPANYNAME
+	            , COMPANYDETAIL
+	            , MANAGER
+	            , PART
+	            , RANK
+	            , PHONENM1
+	            , PHONENM2
+	            , EMAIL
+	            , FAX
+	            , ADDR
+	            , PHONENM3
+	            , PHONENM4
+	            , EMAIL2
+	            , FAX2
+	            , SETTLEDATE
+	            , REGDATE
+	            , COMMENT
+	            , MANAGER2
+	        )
+	        VALUES
+	        (
+	            #companyName#
+	            , #companyDetail#
+	            , #manager#
+	            , #part#
+	            , #rank#
+	            , #phonenm1#
+	            , #phonenm2#
+	            , #email1#
+	            , #fax1#
+	            , #addr#
+	            , #phonenm3#
+	            , #phonenm4#
+	            , #email2#
+	            , #fax2#
+	            , #settleDate#
+	            , date_format(now(), '%Y%m%d%H%i%s')
+	            , #comment#
+	            , #manager2#
+	        )
+	</insert>
+	
+	<update id="updateCustomerInfo" parameterClass="java.util.HashMap">
+	    UPDATE 
+	        COMPANY
+	    SET
+            COMPANYNAME = #companyName#
+            , COMPANYDETAIL = #companyDetail#
+            , MANAGER = #manager#
+            , PART = #part#
+            , RANK = #rank#
+            , PHONENM1 = #phonenm1#
+            , PHONENM2 = #phonenm2#
+            , EMAIL = #email1#
+            , FAX = #fax1#
+            , ADDR = #addr#
+            , PHONENM3 = #phonenm3#
+            , PHONENM4 = #phonenm4#
+            , EMAIL2 = #email2#
+            , FAX2 = #fax2#
+            , SETTLEDATE = #settleDate#
+            , COMMENT = #comment#
+            , MANAGER2 = #manager2#
+        WHERE
+            IDX = #idx#
+	</update>
+	
+	<delete id="deleteCustomerInfo" parameterClass="java.util.HashMap">
+	    DELETE FROM
+	        COMPANY
+	    WHERE
+	        IDX = #idx#
+	</delete>
+	
+	<select id="getMachineList" resultClass="java.util.HashMap">
+	    SELECT
+	        A.COMPANYNAME AS COMPANYNAME
+	        , B.MACHINENAME AS MACHINENAME
+	        , B.MACHINETYPE AS MACHINETYPE
+	        , B.RUNTIME AS RUNTIME
+	        , B.OILNAME AS OILNAME
+	        , B.OILTIME AS OILTIME
+	        , B.OILAMOUNT AS OILAMOUNT
+	        , B.OILSUPLDATE AS OILSUPLDATE
+	        , B.OILSUPLAMOUNT AS OILSUPLAMOUNT
+	        , B.REGDATE AS REGDATE
+	        , B.IDX AS IDX
+	        , B.COMPANYIDX AS COMPANYIDX
+	    FROM
+	        COMPANY A
+	    JOIN
+	        SPECIMEN B
+	    ON
+	        A.IDX = B.COMPANYIDX
+	    WHERE
+	        A.IDX = #companyIdx#
+	</select>
+	
+	<select id="getMachineInfo" resultClass="java.util.HashMap">
+	    SELECT
+	        A.COMPANYNAME AS COMPANYNAME
+	        , B.MACHINENAME AS MACHINENAME
+	        , B.MACHINETYPE AS MACHINETYPE
+	        , B.RUNTIME AS RUNTIME
+	        , B.OILNAME AS OILNAME
+	        , B.OILTIME AS OILTIME
+	        , B.OILAMOUNT AS OILAMOUNT
+	        , B.OILSUPLDATE AS OILSUPLDATE
+	        , B.OILSUPLAMOUNT AS OILSUPLAMOUNT
+	        , B.REGDATE AS REGDATE
+	        , B.COMPANYIDX AS COMPANYIDX
+	        , B.IDX AS IDX
+	    FROM
+	        COMPANY A
+	    JOIN
+	        SPECIMEN B
+	    ON
+	        A.IDX = B.COMPANYIDX
+	    WHERE
+	        B.IDX = #idx#
+	</select>
+	
+	<insert id="insertMachineInfo" parameterClass="java.util.HashMap">
+	    INSERT INTO
+	        SPECIMEN
+	        (
+	            COMPANYIDX
+	            , MACHINENAME
+				, MACHINETYPE
+				, RUNTIME
+				, OILNAME
+				, OILTIME
+				, OILAMOUNT
+				, OILSUPLDATE
+				, OILSUPLAMOUNT
+				, REGDATE
+	        )
+	        VALUES
+	        (
+	            #companyIdx#
+	            , #machinename#
+	            , #machinetype#
+	            , #runtime#
+	            , #oilname#
+	            , #oiltime#
+	            , #oilamount#
+	            , #oilsupldate#
+	            , #oilsuplamount#
+	            , date_format(now(), '%Y%m%d%H%i%s')
+	        )
+	</insert>
+	
+	<update id="updateMachineInfo" parameterClass="java.util.HashMap">
+	    UPDATE
+	        SPECIMEN
+	    SET
+            MACHINENAME = #machinename#
+			, MACHINETYPE = #machinetype#
+			, RUNTIME = #runtime#
+			, OILNAME = #oilname#
+			, OILTIME = #oiltime#
+			, OILAMOUNT = #oilamount#
+			, OILSUPLDATE = #oilsupldate#
+			, OILSUPLAMOUNT = #oilsuplamount#
+		WHERE
+		    IDX = #idx#
+	</update>
+	
+	<delete id="machineDelete" parameterClass="java.lang.Integer">
+	    DELETE FROM
+	        SPECIMEN
+	    WHERE
+	        IDX = #idx#
+	</delete>
+	
+	<select id="getSampleInfo" resultClass="java.util.HashMap">
+	    SELECT
+	        IDX
+	        , SPECINUM
+	        , SPECINAME
+	        , SMPLPOINT
+	        , SMPLDATE
+	        , SMPLCOMMENT
+	    FROM
+	        SPECISAMPLE
+	</select>
+	
+	<update id="updateSampleNum" parameterClass="java.util.HashMap">
+	    UPDATE ID_GENERATOR SET SEQ_CURRVAL = LAST_INSERT_ID(SEQ_CURRVAL + 1)
+	</update>
+	
+	<select id="getSampleNum" resultClass="java.lang.String">
+	    SELECT CONCAT(DATE_FORMAT(NOW(), '%y%m'), LPAD(LAST_INSERT_ID(), 4, '0')) FROM DUAL
+	</select>
+	
+	<insert id="insertSampleInfo" parameterClass="java.util.HashMap">
+	    INSERT INTO
+	        SPECISAMPLE
+	        (
+	            SPECIDX
+	            , SPECINUM
+	            , SPECINAME
+	            , SMPLPOINT
+	            , SMPLDATE
+	            , REGDATE
+	            , SMPLCOMMENT
+	        )
+	        VALUES
+	        (
+	            #specidx#
+	            , #sampleNum#
+	            , #sampleName#
+	            , #samplePoint#
+	            , #sampleDate#
+	            , date_format(now(), '%Y%m%d%H%i%s')
+	            , #sampleComment#
+	        )
+	</insert>
+	
+	<select id="getSampleList" resultClass="java.util.HashMap">
+	    SELECT
+	        IDX
+	        , SPECIDX
+	        , SPECINUM
+	        , SPECINAME
+	        , SMPLPOINT
+	        , SMPLDATE
+	        , SMPLCOMMENT
+	    FROM
+	        SPECISAMPLE
+	    WHERE
+	        SPECIDX = #idx#
+	</select>
+	
+	<delete id="deleteSampleInfo" parameterClass="java.lang.Integer">
+	    DELETE FROM
+	        SPECISAMPLE
+	    WHERE
+	        IDX = #idx#
+	</delete>
+
+</sqlMap>

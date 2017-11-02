@@ -1,0 +1,309 @@
+package com.eye2web.infosys.controller;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.eye2web.infosys.bean.LoginBean;
+import com.eye2web.infosys.service.LoginService;
+import com.eye2web.infosys.service.MemberService;
+import com.eye2web.infosys.util.CommonUtil;
+
+@Controller
+public class MemberController {
+
+	private static Logger logger = Logger.getLogger(MemberController.class);
+
+	@Autowired
+	private MemberService memberService;
+
+	@Autowired
+	private LoginService loginService;
+
+	private LoginBean loginBean;
+
+	private CommonUtil commonUtil;
+
+	private String userId;
+
+	/**
+	 * @Description 회원 리스트 페이지
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/member/memberList.info")
+	public ModelAndView memberList(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+			List<Map> memberList = memberService.getList();
+
+			mav.addObject("memberList", memberList);
+			mav.setViewName("/member/memberList");
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 회원 정보 보기 페이지
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/member/memberView.info")
+	public ModelAndView memberView(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+        if(userId != null && userId != "") {
+        	String idx = "";
+    		int tmpidx = 0;
+
+        	idx = req.getParameter("idx");
+
+        	if(idx != null && idx != "" && idx.length() > 0) {
+        		tmpidx = Integer.parseInt(idx);
+				Map<String, Object> memberMap = new HashMap<String, Object>();
+
+				memberMap = memberService.getMemberInfo(tmpidx);
+
+				if(memberMap.size() > 0) {
+					mav.addObject("idx", idx);
+					mav.addObject("memberInfo", memberMap);
+					mav.setViewName("/member/memberView");
+				} else {
+					Map<String, Object> errorMap = new HashMap<String, Object>();
+					errorMap.put("msg", "정보가 없습니다..");
+					errorMap.put("url", "/member/memberList.info");
+					mav.addObject("errorMap", errorMap);
+					mav.setViewName("/common/error");
+				}
+        	} else {
+        		Map<String, Object> errorMap = new HashMap<String, Object>();
+				errorMap.put("msg", "정보가 없습니다..");
+				errorMap.put("url", "/member/memberList.info");
+				mav.addObject("errorMap", errorMap);
+				mav.setViewName("/common/error");
+        	}
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 회원 추가 입력 페이지
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/member/memberWrite.info")
+	public ModelAndView memberWrite(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+			String idx = "";
+			int tmpidx = 0;
+			Map<String, Object> memberMap = null;
+
+			idx = req.getParameter("idx");
+
+			if(idx == null || idx == "" || idx.length() < 0) {
+				mav.addObject("memberInfo", memberMap);
+				mav.addObject("idx", "");
+				mav.addObject("type", "write");
+				mav.setViewName("/member/memberWrite");
+			} else {
+				tmpidx = Integer.parseInt(idx);
+				memberMap = memberService.getMemberInfo(tmpidx);
+
+				if(memberMap.size() > 0) {
+					mav.addObject("idx", idx);
+					mav.addObject("memberInfo", memberMap);
+					mav.addObject("type", "update");
+					mav.setViewName("/member/memberWrite");
+				} else {
+					Map<String, Object> errorMap = new HashMap<String, Object>();
+					errorMap.put("msg", "정보가 없습니다..");
+					errorMap.put("url", "/member/memberList.info");
+					mav.addObject("errorMap", errorMap);
+					mav.setViewName("/common/error");
+				}
+			}
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 회원 추가 입력 처리
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/member/memberWriteProcess.info")
+	public ModelAndView memberWriteProcess(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+			String idx = req.getParameter("idx");
+			String type = req.getParameter("type");
+			String userId = req.getParameter("userId").toString();
+			String password = req.getParameter("password").toString();
+			String userName = req.getParameter("userName").toString();
+			String email = req.getParameter("email").toString();
+			String addr = req.getParameter("addr").toString();
+			String telNum = req.getParameter("telNum").toString();
+
+			Map<String, Object> memberInfo = new HashMap<String, Object>();
+
+			memberInfo.put("userId", userId);
+			memberInfo.put("password", password);
+			memberInfo.put("userName", userName);
+			memberInfo.put("email", email);
+			memberInfo.put("addr", addr);
+			memberInfo.put("telNum", telNum);
+
+			if(idx != null || idx != "" || idx.length() > 0) {
+				memberInfo.put("idx", idx);
+		    }
+
+			try {
+				 Map<String, Object> successMap = new HashMap<String, Object>();
+
+				if(type == "write" || type.equals("write")) {
+					loginService.insertUserInfo(memberInfo);
+				    successMap.put("msg", "회원정보 추가에 성공하였습니다.");
+				} else {
+					memberService.updateUserInfo(memberInfo);
+					successMap.put("msg", "회원정보 수정에 성공하였습니다.");
+				}
+
+			    successMap.put("url", "/member/memberList.info");
+			    mav.addObject("successMap", successMap);
+			    mav.setViewName("/common/success");
+			} catch(Exception e) {
+				e.toString();
+				logger.error(e.toString());
+				Map<String, Object> errorMap = new HashMap<String, Object>();
+				errorMap.put("msg", "회원정보 추가에 실패하였습니다.");
+				errorMap.put("url", "/member/memberList.info");
+				mav.addObject("errorMap", errorMap);
+				mav.setViewName("/common/error");
+			}
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 회원 삭제 처리
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/member/memberDelete.info")
+	public ModelAndView memberDelete(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+			int tmpIdx = 0;
+			String idx = req.getParameter("idx");
+
+			if(idx != null && idx != "" && idx.length() > 0) {
+				tmpIdx = Integer.parseInt(idx);
+
+				try {
+					memberService.deleteUserInfo(tmpIdx);
+					Map<String, Object> successMap = new HashMap<String, Object>();
+					successMap.put("msg", "회원 정보 삭제에 성공하였습니다.");
+					successMap.put("url", "/member/memberList.info");
+				    mav.addObject("successMap", successMap);
+				    mav.setViewName("/common/success");
+				} catch(Exception e) {
+					e.toString();
+					logger.error(e.toString());
+					Map<String, Object> errorMap = new HashMap<String, Object>();
+					errorMap.put("msg", "회원 정보 삭제에 실패하였습니다.");
+					errorMap.put("url", "/member/memberView.info?idx=" + idx);
+					mav.addObject("errorMap", errorMap);
+					mav.setViewName("/common/error");
+				}
+			} else {
+				Map<String, Object> errorMap = new HashMap<String, Object>();
+				errorMap.put("msg", "정보가 없습니다..");
+				errorMap.put("url", "/member/memberList.info");
+				mav.addObject("errorMap", errorMap);
+				mav.setViewName("/common/error");
+			}
+
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+}

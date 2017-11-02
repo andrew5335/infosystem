@@ -1,0 +1,30 @@
+<%@	page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!--script type="text/javascript" src="/js/jquery-1.11.1.min.js"></script-->
+<script type="text/javascript">
+    $(document).ready(function() {
+    	$("#logout").click(function(e) {
+    		var logout;
+    		logout = confirm("로그아웃하시겠습니까?");
+    		
+    		if(logout == true) {
+    			location.href="/login/logout.info";
+    		} else {
+    			alert("로그아웃이 취소되었습니다.");
+    		} 
+    	});
+    });
+</script>
+<h1><a href="/" title="Wearcheck OilTalk Report System"><img src="/images/wearcheck_logo.png" width="80" alt="OilTalk Report System" id="Insert_logo"/>&nbsp;&nbsp;<font style="font-size:14px; font-weight: bold">OilTalk Report System</font></a></h1>
+<%-- <%	if( _userVo != null ) {	%> --%>
+<!-- 	<div class="top_menu"> -->
+<!-- 		<ul> -->
+<%-- 			<li style="padding-top:9px;"><strong><%=_userVo.getUserName() %></strong>님, 환영합니다. </li> --%>
+<!-- 			<li><img src="/images/btn_logout.gif"/>" onclick="location.href='/auth/logout"/>';" alt="로그아웃" style="cursor:pointer"/></li> -->
+<!-- 		</ul> -->
+<!-- 	</div> -->
+<%-- <%	}	%> --%>
+<table width="100%" align="center">
+    <tr>
+        <td align="right"><input name="logout" class="btn_style4" id="logout" type="submit" value="로그아웃"/></td>
+    </tr>
+</table>

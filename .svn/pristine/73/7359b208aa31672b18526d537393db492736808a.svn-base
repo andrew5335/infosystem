@@ -1,0 +1,97 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>    
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>고객사 정보</title>
+</head>
+<body>
+<%
+    String idx = (String)request.getAttribute("idx");
+    Map<String, Object> customerInfo = (Map<String, Object>)request.getAttribute("customerInfo");
+%>
+    <table witdh="600" align="center">
+        <tr>
+            <td align="center" style="font-size: 14px">고객사 정보 보기</td>
+        </tr>
+    </table>
+    <table width="600" align="center">
+        <tr>
+            <td align="center" colspan="2" style="font-size: 12px; background-color: #999999">고객정보</td>
+        </tr>
+        <tr>
+            <td width="200" align="center" style="font-size: 12px">회사명</td>
+            <td width="400" style="font-size: 12px"><%=customerInfo.get("COMPANYNAME")%></td>
+        </tr>
+        <tr>
+            <td width="200" align="center" style="font-size: 12px">회사세부정보</td>
+            <td width="400" style="font-size: 12px"><%=customerInfo.get("COMPANYDETAIL")%></td>
+        </tr>
+        <tr>
+            <td width="200" align="center" style="font-size: 12px">담당자</td>
+            <td width="400" style="font-size: 12px"><%=customerInfo.get("MANAGER")%></td>
+        </tr>
+        <tr>
+            <td width="200" align="center" style="font-size: 12px">부서명</td>
+            <td width="400" style="font-size: 12px"><%=customerInfo.get("PART")%></td>
+        </tr>
+        <tr>
+            <td width="200" align="center" style="font-size: 12px">직책</td>
+            <td width="400" style="font-size: 12px"><%=customerInfo.get("RANK")%></td>
+        </tr>
+        <tr>
+            <td width="200" align="center" style="font-size: 12px">연락처1</td>
+            <td width="400" style="font-size: 12px"><%=customerInfo.get("PHONENM1")%></td>
+        </tr>
+        <tr>
+            <td width="200" align="center" style="font-size: 12px">연락처2</td>
+            <td width="400" style="font-size: 12px"><%=customerInfo.get("PHONENM2")%></td>
+        </tr>
+        <tr>
+            <td width="200" align="center" style="font-size: 12px">E-mail</td>
+            <td width="400" style="font-size: 12px"><%=customerInfo.get("EMAIL")%></td>
+        </tr>
+        <tr>
+            <td width="200" align="center" style="font-size: 12px">Fax</td>
+            <td width="400" style="font-size: 12px"><%=customerInfo.get("FAX")%></td>
+        </tr>
+        <tr>
+            <td width="200" align="center" style="font-size: 12px">주소</td>
+            <td width="400" style="font-size: 12px"><%=customerInfo.get("ADDR")%></td>
+        </tr>
+        <tr>
+            <td align="center" colspan="2" style="font-size: 12px; background-color: #999999">계산서 담당자 정보</td>
+        </tr>
+        <tr>
+            <td width="200" align="center" style="font-size: 12px">연락처1</td>
+            <td width="400" style="font-size: 12px"><%=customerInfo.get("PHONENM3")%></td>
+        </tr>
+        <tr>
+            <td width="200" align="center" style="font-size: 12px">연락처2</td>
+            <td width="400" style="font-size: 12px"><%=customerInfo.get("PHONENM4")%></td>
+        </tr>
+        <tr>
+            <td width="200" align="center" style="font-size: 12px">E-mail</td>
+            <td width="400" style="font-size: 12px"><%=customerInfo.get("EMAIL2")%></td>
+        </tr>
+        <tr>
+            <td width="200" align="center" style="font-size: 12px">Fax</td>
+            <td width="400" style="font-size: 12px"><%=customerInfo.get("FAX2")%></td>
+        </tr>
+        <tr>
+            <td width="200" align="center" style="font-size: 12px">결제예정일</td>
+            <td width="400" style="font-size: 12px"><%=customerInfo.get("SETTLEDATE")%></td>
+        </tr>
+    </table>
+    <table width="600" align="center">
+        <tr>
+            <td align="center" style="font-size: 12px"><a href="/customer/customerWrite.info?idx=<%=idx%>">정보수정</a></td>
+            <td align="center" style="font-size: 12px"><a href="/customer/customerDelete.info?idx=<%=idx%>">정보삭제</a></td>
+            <td align="center" style="font-size: 12px"><a href="/customer/machineList.info?companyIdx=<%=idx%>">시료정보보기</a></td>
+            <td align="center" style="font-size: 12px"><a href="/customer/customerList.info">목록보기</a></td>
+        </tr>
+    </table>
+</body>
+</html>

@@ -1,0 +1,791 @@
+package com.eye2web.infosys.controller;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.eye2web.infosys.bean.CustomerBean;
+import com.eye2web.infosys.bean.LoginBean;
+import com.eye2web.infosys.service.CustomerService;
+
+/**
+ * @author andrew5335
+ * @Description : 업체정보 관리 컨트롤러
+ */
+@Controller
+public class CustomerController {
+
+	private static Logger logger = Logger.getLogger(CustomerController.class);
+
+	@Autowired
+	private CustomerService customerService;
+
+	private CustomerBean customerBean;
+
+	private LoginBean loginBean;
+
+	private HttpSession session;
+
+	private String userId;
+
+	/**
+	 * @Description 업체 리스트
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/customer/customerList.info")
+	public ModelAndView customerList(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		//userId = (String)session.getAttribute("userId");
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+			List<Map<String, Object>> customerList = customerService.getList();
+
+			mav.addObject("customerList", customerList);
+			mav.setViewName("/customer/customerList");
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 업체정보 입력 페이지
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/customer/customerWrite.info")
+	public ModelAndView customerWrite(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		//userId = (String)session.getAttribute("userId");
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+			int tmpidx = 0;
+			String idx = "";
+			Map<String, Object> customerMap = null;
+			idx = req.getParameter("idx");
+
+			if(idx == null || idx == "" || idx.length() < 0) {
+				mav.addObject("customerInfo", customerMap);
+				mav.addObject("idx", "");
+				mav.addObject("type", "write");
+				mav.setViewName("/customer/customerWrite");
+			} else {
+				tmpidx = Integer.parseInt(idx);
+				customerMap = customerService.getCustomerInfo(tmpidx);
+
+				if(customerMap.size() > 0) {
+					mav.addObject("idx", idx);
+					mav.addObject("customerInfo", customerMap);
+					mav.addObject("type", "update");
+					mav.setViewName("/customer/customerWrite");
+				} else {
+					Map<String, Object> errorMap = new HashMap<String, Object>();
+					errorMap.put("msg", "정보가 없습니다..");
+					errorMap.put("url", "/customer/customerList.info");
+					mav.addObject("errorMap", errorMap);
+					mav.setViewName("/common/error");
+				}
+			}
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 업체정보 입력 처리
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/customer/customerWriteProcess.info")
+	public ModelAndView customerWriteProcess(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		//userId = (String)session.getAttribute("userId");
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+			String idx = req.getParameter("idx");
+			String type = req.getParameter("type");
+
+			String companyName = req.getParameter("companyname").toString();
+			String companyDetail = req.getParameter("companydetail").toString();
+			String manager = req.getParameter("manager").toString();
+			String part = req.getParameter("part").toString();
+			String rank = req.getParameter("rank").toString();
+			String phonenm1 = req.getParameter("phonenm1").toString();
+			String phonenm2 = req.getParameter("phonenm2").toString();
+			String email1 = req.getParameter("email1").toString();
+			String fax1 = req.getParameter("fax1").toString();
+			String addr = req.getParameter("addr").toString();
+			String phonenm3 = req.getParameter("phonenm3").toString();
+			String phonenm4 = req.getParameter("phonenm4").toString();
+			String email2 = req.getParameter("email2").toString();
+			String fax2 = req.getParameter("fax2").toString();
+			String settleDate = req.getParameter("settledate").toString();
+			String manager2 = req.getParameter("manager2").toString();
+			String comment = req.getParameter("comment").toString();
+
+		    Map<String, Object> customerMap = new HashMap<String, Object>();
+
+		    customerMap.put("companyName", companyName);
+		    customerMap.put("companyDetail", companyDetail);
+		    customerMap.put("manager", manager);
+		    customerMap.put("part", part);
+		    customerMap.put("rank", rank);
+		    customerMap.put("phonenm1", phonenm1);
+		    customerMap.put("phonenm2", phonenm2);
+		    customerMap.put("email1", email1);
+		    customerMap.put("fax1", fax1);
+		    customerMap.put("addr", addr);
+		    customerMap.put("phonenm3", phonenm3);
+		    customerMap.put("phonenm4", phonenm4);
+		    customerMap.put("email2", email2);
+		    customerMap.put("fax2", fax2);
+		    customerMap.put("settleDate", settleDate);
+		    customerMap.put("manager2", manager2);
+		    customerMap.put("comment", comment);
+
+		    if(idx != null || idx != "" || idx.length() > 0) {
+		    	customerMap.put("idx", idx);
+		    }
+
+		    try {
+		    	Map<String, Object> successMap = new HashMap<String, Object>();
+
+		    	if(type.equals("write") || type == "write") {
+		    	    customerService.insertCustomerInfo(customerMap);
+		    	    successMap.put("msg", "고객사 정보 입력에 성공하였습니다.");
+		    	} else {
+		    		customerService.updateCustomerInfo(customerMap);
+		    		successMap.put("msg", "고객사 정보 수정에 성공하였습니다.");
+		    	}
+
+			    successMap.put("url", "/customer/customerList.info");
+			    mav.addObject("successMap", successMap);
+			    mav.setViewName("/common/success");
+		    } catch(Exception e) {
+		    	e.toString();
+				logger.error(e.toString());
+				Map<String, Object> errorMap = new HashMap<String, Object>();
+
+				if(type.equals("write") || type == "write") {
+		    	    errorMap.put("msg", "고객사 정보 입력에 실패하였습니다.");
+		    	} else {
+		    		errorMap.put("msg", "고객사 정보 수정에 실패하였습니다.");
+		    	}
+
+				errorMap.put("url", "/customer/customerList.info");
+				mav.addObject("errorMap", errorMap);
+				mav.setViewName("/common/error");
+		    }
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 고객사 정보 보기 페이지
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/customer/customerView.info")
+	public ModelAndView customerView(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		//userId = (String)session.getAttribute("userId");
+		System.out.println("로그인한 사용자 : " + userId);
+
+		String idx = "";
+		int tmpidx = 0;
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+			idx = req.getParameter("idx");
+
+			if(idx != null && idx != "" && idx.length() > 0) {
+				tmpidx = Integer.parseInt(idx);
+				Map<String, Object> customerMap = new HashMap<String, Object>();
+
+				customerMap = customerService.getCustomerInfo(tmpidx);
+
+                if(customerMap.size() > 0) {
+					mav.addObject("idx", idx);
+					mav.addObject("customerInfo", customerMap);
+					mav.setViewName("/customer/customerView");
+				} else {
+					Map<String, Object> errorMap = new HashMap<String, Object>();
+					errorMap.put("msg", "정보가 없습니다..");
+					errorMap.put("url", "/customer/customerList.info");
+					mav.addObject("errorMap", errorMap);
+					mav.setViewName("/common/error");
+				}
+			} else {
+				Map<String, Object> errorMap = new HashMap<String, Object>();
+				errorMap.put("msg", "정보가 없습니다.");
+				errorMap.put("url", "/customer/customerList.info");
+				mav.addObject("errorMap", errorMap);
+				mav.setViewName("/common/error");
+			}
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 고객사 정보 삭제 처리
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/customer/customerDelete.info")
+	public ModelAndView customerDelete(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		//userId = (String)session.getAttribute("userId");
+		System.out.println("로그인한 사용자 : " + userId);
+
+		String idx = "";
+		int tmpidx = 0;
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+			idx = req.getParameter("idx");
+
+			if(idx != null && idx != "" && idx.length() > 0) {
+				tmpidx = Integer.parseInt(idx);
+
+				try {
+					Map<String, Object> customerMap = new HashMap<String, Object>();
+					customerMap.put("idx", tmpidx);
+
+					customerService.deleteCustomerInfo(customerMap);
+
+					Map<String, Object> successMap = new HashMap<String, Object>();
+					successMap.put("msg", "고객사 정보 삭제에 성공하였습니다.");
+					successMap.put("url", "/customer/customerList.info");
+				    mav.addObject("successMap", successMap);
+				    mav.setViewName("/common/success");
+				} catch(Exception e) {
+					e.toString();
+					logger.error(e.toString());
+					Map<String, Object> errorMap = new HashMap<String, Object>();
+					errorMap.put("msg", "고객사 정보 삭제에 실패하였습니다.");
+					errorMap.put("url", "/customer/customerList.info");
+					mav.addObject("errorMap", errorMap);
+					mav.setViewName("/common/error");
+				}
+			} else {
+				Map<String, Object> errorMap = new HashMap<String, Object>();
+				errorMap.put("msg", "정보가 없습니다..");
+				errorMap.put("url", "/customer/customerList.info");
+				mav.addObject("errorMap", errorMap);
+				mav.setViewName("/common/error");
+			}
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 기계정보 리스트
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/customer/machineList.info")
+	public ModelAndView machineList(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		//userId = (String)session.getAttribute("userId");
+		System.out.println("로그인한 사용자 : " + userId);
+
+		String companyIdx = "";
+		int tmpidx = 0;
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+			companyIdx = req.getParameter("companyIdx");
+
+			if(companyIdx != null && companyIdx != "" && companyIdx.length() > 0) {
+				tmpidx = Integer.parseInt(companyIdx);
+
+				List<Map> machineList = customerService.getMachineList(tmpidx);
+
+				mav.addObject("machineList", machineList);
+				mav.addObject("companyIdx", companyIdx);
+				mav.setViewName("/customer/machineList");
+			} else {
+				Map<String, Object> errorMap = new HashMap<String, Object>();
+				errorMap.put("msg", "고객사 정보가 없습니다.");
+				errorMap.put("url", "/customer/customerView.info?idx=" + companyIdx);
+				mav.addObject("errorMap", errorMap);
+				mav.setViewName("/common/error");
+			}
+
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 기계정보 보기 페이지
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/customer/machineView.info")
+	public ModelAndView machineView(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		//userId = (String)session.getAttribute("userId");
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+			String idx = req.getParameter("idx");
+			String companyIdx = req.getParameter("companyIdx");
+			int tmpIdx = 0;
+
+			if(idx == null || idx == "" || idx.length() < 0) {
+				Map<String, Object> errorMap = new HashMap<String, Object>();
+				errorMap.put("msg", "정보가 없습니다.");
+				errorMap.put("url", "/customer/machineList.info?idx=" + companyIdx);
+				mav.addObject("errorMap", errorMap);
+				mav.setViewName("/common/error");
+			} else {
+				tmpIdx = Integer.parseInt(idx);
+				Map<String, Object> machineInfo = new HashMap<String, Object>();
+
+				machineInfo = customerService.getMachineInfo(tmpIdx);
+
+				if(machineInfo.size() > 0) {
+					List<Map> sampleList = customerService.getSampleList(tmpIdx);
+
+					if(sampleList.size() > 0) {
+						mav.addObject("sampleInfo", sampleList);
+					} else {
+						mav.addObject("sampleInfo", null);
+					}
+
+					mav.addObject("idx", idx);
+					mav.addObject("machineInfo", machineInfo);
+					mav.addObject("companyIdx", companyIdx);
+					mav.setViewName("/customer/machineView");
+				} else {
+					Map<String, Object> errorMap = new HashMap<String, Object>();
+					errorMap.put("msg", "정보가 없습니다.");
+					errorMap.put("url", "/customer/machineList.info?idx=" + companyIdx);
+					mav.addObject("errorMap", errorMap);
+					mav.setViewName("/common/error");
+				}
+			}
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 기계정보 입력 페이지
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/customer/machineWrite.info")
+	public ModelAndView machineWrite(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		//userId = (String)session.getAttribute("userId");
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+			int tmpidx = 0;
+			String idx = "";
+			String companyIdx = req.getParameter("companyIdx");
+			Map<String, Object> machineMap = null;
+			idx = req.getParameter("idx");
+
+			if(idx == null || idx == "" || idx.length() < 0) {
+				mav.addObject("machineInfo", machineMap);
+				mav.addObject("idx", "");
+				mav.addObject("companyIdx", companyIdx);
+				mav.addObject("type", "write");
+				mav.setViewName("/customer/machineWrite");
+			} else {
+				tmpidx = Integer.parseInt(idx);
+				machineMap = customerService.getMachineInfo(tmpidx);
+
+				if(machineMap.size() > 0) {
+					mav.addObject("machineInfo", machineMap);
+					mav.addObject("idx", idx);
+					mav.addObject("companyIdx", companyIdx);
+					mav.addObject("type", "update");
+					mav.setViewName("/customer/machineWrite");
+				} else {
+					Map<String, Object> errorMap = new HashMap<String, Object>();
+					errorMap.put("msg", "정보가 없습니다.");
+					errorMap.put("url", "/customer/machineList.info?idx=" + companyIdx);
+					mav.addObject("errorMap", errorMap);
+					mav.setViewName("/common/error");
+				}
+			}
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 기계정보 입력 처리
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/customer/machineWriteProcess.info")
+	public ModelAndView machineWriteProcess(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		//userId = (String)session.getAttribute("userId");
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+			String type = req.getParameter("type");
+			String companyIdx = req.getParameter("companyIdx");
+			String idx = req.getParameter("idx");
+
+		    String machinename = req.getParameter("machinename");
+		    String machinetype = req.getParameter("machinetype");
+		    String runtime = req.getParameter("runtime");
+		    String oilname = req.getParameter("oilname");
+		    String oiltime = req.getParameter("oiltime");
+		    String oilamount = req.getParameter("oilamount");
+		    String oilsupldate = req.getParameter("oilsupldate");
+		    String oilsuplamount = req.getParameter("oilsuplamount");
+
+		    Map<String, Object> machineMap = new HashMap<String, Object>();
+
+		    machineMap.put("machinename", machinename);
+		    machineMap.put("machinetype", machinetype);
+		    machineMap.put("runtime", runtime);
+		    machineMap.put("oilname", oilname);
+		    machineMap.put("oiltime", oiltime);
+		    machineMap.put("oilamount", oilamount);
+		    machineMap.put("oilsupldate", oilsupldate);
+		    machineMap.put("oilsuplamount", oilsuplamount);
+		    machineMap.put("companyIdx", companyIdx);
+
+		    if(idx != null && idx != "" && idx.length() > 0) {
+		    	machineMap.put("idx", idx);
+		    }
+
+			try {
+				Map<String, Object> successMap = new HashMap<String, Object>();
+
+		    	if(type.equals("write") || type == "write") {
+		    	    customerService.insertMachineInfo(machineMap);
+		    	    successMap.put("msg", "기계 정보 입력에 성공하였습니다.");
+		    	} else {
+		    		customerService.updateMachineInfo(machineMap);
+		    		successMap.put("msg", "기계 정보 수정에 성공하였습니다.");
+		    	}
+
+			    successMap.put("url", "/customer/machineList.info?companyIdx=" + companyIdx);
+			    mav.addObject("successMap", successMap);
+			    mav.setViewName("/common/success");
+			} catch(Exception e) {
+		    	e.toString();
+				logger.error(e.toString());
+				Map<String, Object> errorMap = new HashMap<String, Object>();
+
+				if(type.equals("write") || type == "write") {
+		    	    errorMap.put("msg", "기계 정보 입력에 실패하였습니다.");
+		    	} else {
+		    		errorMap.put("msg", "기계 정보 수정에 실패하였습니다.");
+		    	}
+
+				errorMap.put("url", "/customer/machineList.info?companyIdx=" + companyIdx);
+				mav.addObject("errorMap", errorMap);
+				mav.setViewName("/common/error");
+		    }
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 기계정보 삭제 처리
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/customer/machineDelete.info")
+	public ModelAndView machineDelete(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		//userId = (String)session.getAttribute("userId");
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+			String idx = req.getParameter("idx");
+			String companyIdx = req.getParameter("companyIdx");
+			int tmpIdx = 0;
+
+			if(idx != null & idx != "" && idx.length() > 0) {
+				tmpIdx = Integer.parseInt(idx);
+
+				try {
+					customerService.machineDelete(tmpIdx);
+
+					Map<String, Object> successMap = new HashMap<String, Object>();
+					successMap.put("msg", "기계 정보 삭제에 성공하였습니다.");
+					successMap.put("url", "/customer/machineList.info?companyIdx=" + companyIdx);
+				    mav.addObject("successMap", successMap);
+				    mav.setViewName("/common/success");
+				} catch(Exception e) {
+					e.toString();
+					logger.error(e.toString());
+					Map<String, Object> errorMap = new HashMap<String, Object>();
+					errorMap.put("msg", "기계 정보 삭제에 실패하였습니다.");
+					errorMap.put("url", "/customer/machineList.info?companyIdx=" + companyIdx);
+					mav.addObject("errorMap", errorMap);
+					mav.setViewName("/common/error");
+				}
+			} else {
+				Map<String, Object> errorMap = new HashMap<String, Object>();
+				errorMap.put("msg", "정보가 없습니다.");
+				errorMap.put("url", "/customer/machineList.info?companyIdx=" + companyIdx);
+				mav.addObject("errorMap", errorMap);
+				mav.setViewName("/common/error");
+			}
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 샘플정보 입력 처리
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/customer/sampleWrite.info")
+	public ModelAndView sampleWrite(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		//userId = (String)session.getAttribute("userId");
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+			String companyIdx = req.getParameter("companyIdx");
+			String idx = req.getParameter("idx");
+
+			String sampleName = req.getParameter("sampleName");
+			String samplePoint = req.getParameter("samplePoint");
+			String sampleDate = req.getParameter("sampleDate");
+			String sampleComment = req.getParameter("sampleComment");
+
+			Map<String, Object> sampleMap = new HashMap<String, Object>();
+
+			sampleMap.put("sampleName", sampleName);
+			sampleMap.put("samplePoint", samplePoint);
+			sampleMap.put("sampleDate", sampleDate);
+			sampleMap.put("sampleComment", sampleComment);
+			sampleMap.put("specidx", idx);
+
+			try {
+				String sampleNum = customerService.getSampleNum();
+
+				if(sampleNum != null && sampleNum != "") {
+					sampleMap.put("sampleNum", sampleNum);
+				}
+
+				customerService.insertSampleInfo(sampleMap);
+
+				Map<String, Object> successMap = new HashMap<String, Object>();
+				successMap.put("msg", "샘플 정보 입력에 성공하였습니다.");
+				successMap.put("url", "/customer/machineView.info?idx=" + idx + "&companyIdx=" + companyIdx);
+			    mav.addObject("successMap", successMap);
+			    mav.setViewName("/common/success");
+			} catch(Exception e) {
+				e.toString();
+				logger.error(e.toString());
+				Map<String, Object> errorMap = new HashMap<String, Object>();
+				errorMap.put("msg", "샘플 정보 입력에 실패하였습니다.");
+				errorMap.put("url", "/customer/machineView.info?idx=" + idx + "&companyIdx=" + companyIdx);
+				mav.addObject("errorMap", errorMap);
+				mav.setViewName("/common/error");
+			}
+
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 샘플정보 삭제 처리
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/customer/sampleDelete.info")
+	public ModelAndView sampleDelete(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		//userId = (String)session.getAttribute("userId");
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+			String idx = req.getParameter("idx");
+			String machineIdx = req.getParameter("machineIdx");
+			String companyIdx = req.getParameter("companyIdx");
+			int tmpIdx = 0;
+
+			if(idx != null && idx != "" && idx.length() > 0) {
+				tmpIdx = Integer.parseInt(idx);
+
+				try {
+					customerService.deleteSampleInfo(tmpIdx);
+
+					Map<String, Object> successMap = new HashMap<String, Object>();
+					successMap.put("msg", "샘플 정보 삭제에 성공하였습니다.");
+					successMap.put("url", "/customer/machineView.info?idx=" + machineIdx + "&companyIdx=" + companyIdx);
+				    mav.addObject("successMap", successMap);
+				    mav.setViewName("/common/success");
+				} catch(Exception e) {
+					e.toString();
+					logger.error(e.toString());
+					Map<String, Object> errorMap = new HashMap<String, Object>();
+					errorMap.put("msg", "샘플 정보 삭제에 실패하였습니다.");
+					errorMap.put("url", "/customer/machineView.info?idx=" + machineIdx + "&companyIdx=" + companyIdx);
+					mav.addObject("errorMap", errorMap);
+					mav.setViewName("/common/error");
+				}
+
+			}
+
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+}

@@ -1,0 +1,309 @@
+<%@ page language="java" contentType="text/html; charset=EUC-KR"
+    pageEncoding="EUC-KR"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-KR">
+<title>Insert title here</title>
+<script type="text/javascript" src="/js/jquery-1.11.1.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+    	$("#chktest").click(function(e) {
+    		var chk = $(this).is(":checked");
+    		//alert(chk);
+    		if(chk) {
+    			document.getElementById("testtable").style.display = "";
+    		} else {
+    			document.getElementById("testtable").style.display = "none";
+    		}
+    	});
+    	
+    	$("#condition").click(function(e){
+    		var chk = $(this).is(":checked");
+    		if(chk) {
+    			document.getElementById("conditiontbl").style.display = "";
+    		} else {
+    			document.getElementById("conditiontbl").style.display = "none";
+    		}
+    	});
+    	
+    	$("#contamination").click(function(e){
+    		var chk = $(this).is(":checked");
+    		if(chk) {
+    			document.getElementById("contaminationtbl").style.display = "";
+    		} else {
+    			document.getElementById("contaminationtbl").style.display = "none";
+    		}
+    	});
+    	
+    	$("#wear").click(function(e){
+    		var chk = $(this).is(":checked");
+    		if(chk) {
+    			document.getElementById("weartbl").style.display = "";
+    		} else {
+    			document.getElementById("weartbl").style.display = "none";
+    		}
+    	});
+    });
+</script>
+</head>
+<body>
+    <table width="800" align="center">
+        <tr>
+            <td align="center"><b>Report Data 입력</b></td>
+        </tr>
+    </table>
+    <table width="800" align="center">
+        <tr>
+            <td style="font-size:12px;"><input type="checkbox" id="contamination" name="contamination" value="open"">1. Contamination</td>
+            <td style="font-size:12px;"><input type="checkbox" id="condition" name="condition" value="open"">2. Oil Condition</td>
+            <td style="font-size:12px;"><input type="checkbox" id="wear" name="wear" value="open"">3. Wear</td>
+        </tr>
+    </table>
+    <table cellpadding="0" cellspacing="1" border="0" id="contaminationtbl" name="contiminationtbl" width="800" align="center" style="display:none;">
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="center"><b>1. Contamination 항목</b></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left"><b>1) 오염도 1</b></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Particle Count ; Laser Particle counter</b></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom">- Class</td>
+        </tr>
+        <tr>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">ISO 4406</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="iso" name="iso" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">NAS 1638</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="nas" name="nas" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">SAE AS 4059</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="sae" name="sae" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom">- 입자크기별(㎛) 개수(Number of particles/ml)</td>
+        </tr>
+        <tr>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>4um (c)</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="p4um" name="p4um" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>6um (c)</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="p6um" name="p6um" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>14um (c)</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="p14um" name="p14um" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+        </tr>
+        <tr>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>21um (c)</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="p21um" name="p21um" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>38um (c)</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="p38um" name="p38um" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>70um</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="p70um" name="p70um" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>- >20um Wear Mode</b></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom">- Cutting Wear</td>
+        </tr>
+        <tr>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Counts</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="ccount" name="ccount" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Average</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="caverage" name="caverage" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>STD</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="cstd" name="cstd" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Max size</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="cmaxsize" name="cmaxsize" style="width:80px; height:15px"></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom">- Severe Sliding Wear</td>
+        </tr>
+        <tr>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Counts</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="scount" name="scount" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Average</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="saverage" name="saverage" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>STD</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="sstd" name="sstd" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Max size</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="smaxsize" name="smaxsize" style="width:80px; height:15px"></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom">- Fatigue</td>
+        </tr>
+        <tr>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Counts</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="fcount" name="fcount" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Average</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="faverage" name="faverage" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>STD</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="fstd" name="fstd" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Max size</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="fmaxsize" name="fmaxsize" style="width:80px; height:15px"></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom">- Nonmetallic Particles</td>
+        </tr>
+        <tr>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Counts</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="ncount" name="ncount" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Average</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="naverage" name="naverage" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>STD</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="nstd" name="nstd" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>Max size</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="nmaxsize" name="nmaxsize" style="width:80px; height:15px"></td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+                        <td><img src="/images/cuttingwear.png"></td>
+                        <td><img src="/images/fatiguewear.png"></td>
+                        <td><img src="/images/nonmetalicparticle.png"></td>
+                    </tr>
+                    <tr>
+                        <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="center">Cutting Wear</td>
+                        <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="center">Fatigue Wear</td>
+                        <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="center">Nonmetalic Particles</td>
+                    </tr>
+                    <tr>
+                        <td><img src="/images/severeslidingwear.png"></td>
+                        <td><img src="/images/water.png"></td>
+                        <td><img src="/images/fiber.png"></td>
+                    </tr>
+                    <tr>
+                        <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="center">Severe Sliding Wear</td>
+                        <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="center">Water</td>
+                        <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="center">Fiber</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Particle Contaminaion by the counting method using an optical microscope</b></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom">- Class</td>
+        </tr>
+        <tr>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">ISO 4406</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="iso" name="iso2" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">NAS 1638</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="nas" name="nas2" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">SAE AS 4059</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="sae" name="sae2" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom">- 입자크기별(㎛) 개수(Number of particles/ml)</td>
+        </tr>
+        <tr>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">5-15um</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="5" name="5" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">15-25um</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="15" name="15" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">25-50um</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="25" name="25" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">50-100um</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="50" name="50" style="width:80px; height:15px"></td>
+        </tr>
+        <tr>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">>100um</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="100" name="100" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+        </tr>
+        <tr>
+            <td colspan="8">
+                <table width="100%" align="center">
+                    <tr>
+                        <td width="200" style="font-size:12px; background-color: #cccccc" align="center">Particle Information</td>
+                        <td><img src="/images/99micron.png"></td>
+                        <td><img src="/images/89micron.png"></td>
+                        <td><img src="/images/76micron.png"></td>
+                        <td><img src="/images/69micron.png"></td>
+                        <td><img src="/images/64micron.png"></td>
+                    </tr>
+                </table>
+                <table width="100%" align="center">
+                    <tr>
+                        <td width="200" style="font-size:12px; background-color: #cccccc" align="center">Membrane Patch Image1</td>
+                        <td><img src="/images/membranepatchimage.png"></td>
+                    </tr>
+                </table>
+                <table width="100%" align="center">
+                    <tr>
+                        <td width="200" style="font-size:12px; background-color: #cccccc" align="center">Membrane Patch Image2 (확대)</td>
+                        <td valign="top"><img src="/images/membrane2.png"><img src="/images/membrane3.png"><img src="/images/membrane4.png"><img src="/images/membrane5.png"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Water Content (ppm)</b></td>
+        </tr>
+        <tr>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">Water</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="water" name="water" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="font-size:12px; height:30px;" align="left" valign="bottom"><b>Chlorine (ppm)</b></td>
+        </tr>
+        <tr>
+            <td width="100" height="20" style="font-size:12px; background-color: #cccccc" align="right">Chlorine</td>
+            <td width="100" height="20" style="font-size:12px;" align="left"><input type="text" id="chlorine" name="chlorine" style="width:80px; height:15px"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+            <td width="100" height="20" style="font-size:12px;" align="left"></td>
+        </tr>
+    </table>
+    <table width="800" align="center">
+        <tr>
+            <td height="20"></td>
+        </tr>
+    </table>
+    <table id="conditiontbl" name="conditiontbl" width="800" align="center" style="display:none;">
+        <tr>
+            <td colspan="8" style="font-size:12px;" align="center"><b>2. Oil Condition 항목</b></td>
+        </tr>
+        <tr>
+            <td style="font-size:12px;"><input type="text" id="testfield" name="testfield"></td>
+        </tr>
+    </table>
+    <table width="800" align="center">
+        <tr>
+            <td height="20"></td>
+        </tr>
+    </table>
+    <table id="weartbl" name="weartbl" width="800" align="center" style="display:none;">
+        <tr>
+            <td colspan="8" style="font-size:12px;" align="center"><b>3. Wear 항목</b></td>
+        </tr>
+        <tr>
+            <td style="font-size:12px;"><input type="text" id="testfield" name="testfield"></td>
+        </tr>
+    </table>
+</body>
+</html>

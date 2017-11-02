@@ -1,0 +1,53 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %> 
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<%
+	String idx = (String)request.getAttribute("idx");
+	String title = "";
+	String contents = "";
+	String passwd = "";
+	String writeName = "";
+	Map<String, Object> viewList = (Map<String, Object>)request.getAttribute("result");
+	if (viewList != null){
+		title = viewList.get("TITLE").toString();
+		contents = viewList.get("CONTENTS").toString();
+		passwd = viewList.get("PASSWD").toString();
+		writeName = viewList.get("WRITE_NAME").toString();
+	} 
+
+	//for(Map item : viewList){
+%>
+	<table cellpadding="0" cellspacing="0" border="0">
+		<form name="form" id="insert" action="/sample/insert.info" method="post">
+		<input type="hidden" id="idx" name="idx" value="<%=idx %>"/>
+		<tr>
+			<td>이름</td>
+			<td><input type="text" id="writeName" name="writeName" value="<%=writeName %>"/></td>
+		</tr>
+		<tr>
+			<td>비밀번호</td>
+			<td><input type="password" id="passwd" name="passwd" value="<%=passwd %>"/></td>
+		</tr>
+		<tr>
+			<td>제목</td>
+			<td><input type="textarea" id="title" name="title" value="<%=title %>"/></td>
+		</tr>
+		<tr>
+			<td>내용</td>
+			<td><textarea id="contents" name="contents"/><%=contents %></textarea></td>
+		</tr>
+		<tr>
+			<td colspan="2"><input type="submit" id="submit" name="submit"/></td>
+		</tr>
+		</form>
+	</table>
+
+</body>
+</html>

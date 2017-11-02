@@ -1,0 +1,1810 @@
+package com.eye2web.infosys.controller;
+
+import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.eye2web.infosys.bean.LoginBean;
+import com.eye2web.infosys.bean.StandardData;
+import com.eye2web.infosys.dto.InfoFileDto;
+import com.eye2web.infosys.service.CustomerService;
+import com.eye2web.infosys.service.InfoService;
+import com.eye2web.infosys.util.CommonUtil;
+
+/**
+ * @author HJKim
+ * @Description : 정보관리 화면 컨트롤러
+ *
+ */
+@Controller
+public class InfoController {
+
+	private static Logger logger = Logger.getLogger(InfoController.class);
+
+	@Autowired
+	private InfoService infoService;
+
+	@Autowired
+	private CustomerService customerService;
+
+	@Autowired
+    private ServletContext context;
+
+	private LoginBean loginBean;
+
+	private CommonUtil commonUtil;
+
+	private HttpSession session;
+
+	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+	private StandardData sData;
+
+	//private InfoFileDto infoFileDto;
+
+	private String userId;
+
+	// 기준치 데이터
+	private final String phydraulic1  = ">16/14/12";    // 유압유 주의기준
+	private final String phydraulic2  = ">18/16/14";    // 유압유 경고기준
+	private final String pgear1 = ">20/18/15";    // 기어유 주의기준
+	private final String pgear2 = ">22/20/17";    // 기어유 경고기준
+	private final String pengine1 = ">18/16/13";    // 엔진유 주의기준
+	private final String pengine2 = ">20/18/15";    // 엔진유 경고기준
+	private final String pturbine1 = ">18/16/13";    // 터빈유 주의기준
+	private final String pturbine2 = ">20/18/15";    // 터빈유 경고기준
+	private final String pbearing1 = ">18/16/13";    // 베어링유 주의기준
+	private final String pbearing2 = ">20/18/15";    // 베어링유 경고기준
+
+	private final String whydraulic1  = ">100";    // 유압유 주의기준
+	private final String whydraulic2  = ">400";    // 유압유 경고기준
+	private final String wgear1 = ">300";    // 기어유 주의기준
+	private final String wgear2 = ">600";    // 기어유 경고기준
+	private final String wengine1 = ">200";    // 엔진유 주의기준
+	private final String wengine2 = ">500";    // 엔진유 경고기준
+	private final String wturbine1 = ">50";    // 터빈유 주의기준
+	private final String wturbine2 = ">300";    // 터빈유 경고기준
+	private final String wair1 = ">100";    // 공기압축기 주의기준
+	private final String wair2 = ">400";    // 공기압축기 경고기준
+	private final String weht1 = ">250";    // EHT 주의기준
+	private final String weht2 = ">400";    // EHT 경고기준
+
+	private final String zddp1 = "Inflection point + 0.2";
+	private final String zddp2 = "Initial AN + 1.0";
+	private final String aw1 = "Initial AN + 0.2";
+	private final String aw2 = "Initial AN + 1.0";
+	private final String volume1 = "Initial AN + 0.03";
+	private final String volume2 = "Initial AN + 0.05";
+
+	private final String kzddp1 = "변곡점+0.2";
+	private final String kzddp2 = "신유산가+1.0";
+	private final String kaw1 = "신유산가+0.2";
+	private final String kaw2 = "신유산가+1.0";
+	private final String kvolume1 = "신유산가+0.03";
+	private final String kvolume2 = "신유산가+0.05";
+
+	private final String viscosity1 = "±10% by New";
+	private final String viscosity2 = "±15% by New";
+	private final String kviscosity1 = "신유점도±10%";
+	private final String kviscosity2 = "신유점도±15%";
+    private final double cviscosityA = 0.85;
+    private final double cviscosityB = 0.9;
+    private final double cviscosityC = 1.1;
+    private final double cviscosityD = 1.15;
+
+    private final String engine = "> 20 (30max)";
+    private final String trucks = "> 100(100max)";
+    private final String loaders = "> 60";
+    private final String tractors = "> 150";
+    private final String transmissions = "> 20-40";
+    private final String oilpressure = "> 20";
+    private final String gearbox = "> 100";
+    private final String rolling = "> 50";
+
+	/**
+	 * @Description 정보관리 메인화면
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/info/infoMain.info")
+	public ModelAndView infoMain(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		//userId = (String)session.getAttribute("userId");
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+			List<Map> infoList = infoService.getList();
+			List<Map> customerList = customerService.getList();
+
+			mav.addObject("infoList", infoList);
+			mav.addObject("customerList", customerList);
+		    mav.setViewName("/info/infoMain");
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 정보 리스트
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/info/infoList.info")
+	public ModelAndView infoList(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		//userId = (String)session.getAttribute("userId");
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+			List<Map> infoList = infoService.getList();
+
+			mav.addObject("infoList", infoList);
+			mav.setViewName("/info/infoList");
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 정보 입력 화면
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/info/infoWrite.info")
+	public ModelAndView infoWrite(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		//userId = (String)session.getAttribute("userId");
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		// 로그인한 사용자인 경우
+		if(userId != null && userId != "") {
+			String idx = "";
+			int tmpidx = 0;
+			Map<String, Object> infoMap = null;
+			idx = req.getParameter("idx");
+
+			List<Map> customerList = customerService.getList();
+
+			// 정보 idx 값이 있을 경우 수정, 없으면 입력
+			if(idx == null || idx == "" || idx.length() < 0) {
+
+				// idx값이 없을 경우 빈 입력 페이지 표시
+				mav.addObject("infoMap", infoMap);
+				mav.addObject("idx", "");
+				mav.addObject("type", "write");
+				mav.addObject("customerList", customerList);
+				mav.setViewName("/info/infoWrite");
+			} else {
+				// idx 값이 있을 경우 관련 정보를 DB에서 가져와 페이지의 각 필드에 노출
+				tmpidx = Integer.parseInt(idx);
+				infoMap = infoService.getInfoDetail(tmpidx);
+
+				if(infoMap.size() > 0) {
+					mav.addObject("idx", idx);
+					mav.addObject("infoMap", infoMap);
+					mav.addObject("type", "update");
+					mav.addObject("customerList", customerList);
+					mav.setViewName("/info/infoWrite");
+				} else {
+					Map<String, Object> errorMap = new HashMap<String, Object>();
+					errorMap.put("msg", "정보가 없습니다..");
+					errorMap.put("url", "/infoMap/infoList.info");
+					mav.addObject("errorMap", errorMap);
+					mav.setViewName("/common/error");
+				}
+			}
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 기계 리스트
+	 * @param req
+	 * @param res
+	 * @throws Exception
+	 */
+	@RequestMapping("/ajax/machineList.info")
+	public void machineList(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		String companyIdx = "";
+		companyIdx = req.getParameter("companyIdx").toString();
+
+		if(companyIdx != null && companyIdx != "") {
+			int cpIdx = Integer.parseInt(companyIdx);
+			List<Map> mcList = customerService.getMachineList(cpIdx);
+
+			JSONObject jsonObj = new JSONObject();
+			jsonObj.put("result", mcList);
+			System.out.println(jsonObj);
+			res.setContentType("text/html;charset=utf-8");
+			PrintWriter out=res.getWriter();
+            out.print(jsonObj.toString());
+		}
+	}
+
+	/**
+	 * @Description 샘플 리스트
+	 * @param req
+	 * @param res
+	 * @throws Exception
+	 */
+	@RequestMapping("/ajax/smplList.info")
+	public void smplList(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		String specIdx = "";
+		specIdx = req.getParameter("specIdx").toString();
+
+		if(specIdx != null && specIdx != "") {
+			int smplIdx = Integer.parseInt(specIdx);
+			List<Map> smList = customerService.getSampleList(smplIdx);
+
+			JSONObject jsonObj = new JSONObject();
+			jsonObj.put("result", smList);
+			System.out.println(jsonObj);
+			res.setContentType("text/html;charset=utf-8");
+			PrintWriter out=res.getWriter();
+            out.print(jsonObj.toString());
+		}
+	}
+
+	/**
+	 * @Description 샘플포인트 정보
+	 * @param req
+	 * @param res
+	 * @throws Exception
+	 */
+	@RequestMapping("/ajax/smplPoint.info")
+	public void smplPoint(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		String sampleIdx = "";
+		sampleIdx = req.getParameter("sampleIdx").toString();
+
+		if(sampleIdx != null && sampleIdx != "") {
+			int smplIdx = Integer.parseInt(sampleIdx);
+			String rstSmplPoint = infoService.getSmplPoint(smplIdx);
+
+			JSONObject jsonObj = new JSONObject();
+			jsonObj.put("result", rstSmplPoint);
+			System.out.println(jsonObj);
+			res.setContentType("text/html;charset=utf-8");
+			PrintWriter out=res.getWriter();
+            out.print(jsonObj.toString());
+		}
+	}
+
+	/**
+	 * @Description 정보입력 처리
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/info/infoWriteProcess.info")
+	public ModelAndView infoWriteProcess(HttpServletRequest req, HttpServletResponse res, InfoFileDto infoFileDto) throws Exception {
+
+		userId = loginBean.getUserId();
+		//userId = (String)session.getAttribute("userId");
+		System.out.println("로그인한 사용자 : " + userId);
+
+		String idx = req.getParameter("idx");
+		String type = req.getParameter("type");
+		String companyIdx = req.getParameter("companyIdx");
+		String specIdx = req.getParameter("specIdx");
+		String sampleIdx = req.getParameter("sampleIdx");
+		String smplPoint = req.getParameter("smplpoint");
+		String oilType = req.getParameter("oilType");
+		String authorizer = req.getParameter("authorizer");
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+			commonUtil = new CommonUtil();
+			Map<String, Object> infoMap = commonUtil.convertReqToMap(req);
+
+			long today = System.currentTimeMillis();
+			DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+			String todayDate = df.format(today);
+			System.out.println("오늘 날짜 : " + todayDate);
+
+			String path = req.getSession().getServletContext().getRealPath("/");
+			System.out.println("Path : " + path);
+
+			MultipartFile upFile1 = infoFileDto.getUpFile1();
+			MultipartFile ucuttingWear          = infoFileDto.getUcuttingWear();
+			MultipartFile ufatigueWear          = infoFileDto.getUfatigueWear();
+			MultipartFile unonmetalicparticles  = infoFileDto.getUnonmetalicparticles();
+			MultipartFile usevereSlidingWear    = infoFileDto.getUsevereSlidingWear();
+			MultipartFile uwater                = infoFileDto.getUwater();
+			MultipartFile ufiber                = infoFileDto.getUfiber();
+			MultipartFile uParticleInfo1        = infoFileDto.getuParticleInfo1();
+			MultipartFile uParticleInfo2        = infoFileDto.getuParticleInfo2();
+			MultipartFile uParticleInfo3        = infoFileDto.getuParticleInfo3();
+			MultipartFile uParticleInfo4        = infoFileDto.getuParticleInfo4();
+			MultipartFile uParticleInfo5        = infoFileDto.getuParticleInfo5();
+			MultipartFile uMembranePatchImg1    = infoFileDto.getuMembranePatchImg1();
+			MultipartFile uMembranePatchImg2    = infoFileDto.getuMembranePatchImg2();
+			MultipartFile uMembranePatchImg3    = infoFileDto.getuMembranePatchImg3();
+			MultipartFile uMembranePatchImg4    = infoFileDto.getuMembranePatchImg4();
+			MultipartFile uMembranePatchImg5    = infoFileDto.getuMembranePatchImg5();
+			MultipartFile uMembranePatchImg6    = infoFileDto.getuMembranePatchImg6();
+			MultipartFile uPatch                = infoFileDto.getuPatch();
+			MultipartFile uPatchExt             = infoFileDto.getuPatchExt();
+			MultipartFile uPatchTest            = infoFileDto.getuPatchTest();
+			MultipartFile uSludge               = infoFileDto.getuSludge();
+			MultipartFile uBlotter              = infoFileDto.getuBlotter();
+			MultipartFile uRuler1               = infoFileDto.getuRuler1();
+			MultipartFile uRuler2               = infoFileDto.getuRuler2();
+
+			String fileName1 = commonUtil.fileUpload(upFile1, req);
+			String ucuttingWearName					= commonUtil.fileUpload(ucuttingWear, req);
+			String uFatigueWearName         = commonUtil.fileUpload(ufatigueWear, req);
+			String unonmetalicparticlesName  = commonUtil.fileUpload(unonmetalicparticles, req);
+			String usevereSlidingWearName   = commonUtil.fileUpload(usevereSlidingWear, req);
+			String uwaterName               = commonUtil.fileUpload(uwater, req);
+			String ufiberName               = commonUtil.fileUpload(ufiber, req);
+			String uParticleInfo1Name       = commonUtil.fileUpload(uParticleInfo1, req);
+			String uParticleInfo2Name       = commonUtil.fileUpload(uParticleInfo2, req);
+			String uParticleInfo3Name       = commonUtil.fileUpload(uParticleInfo3, req);
+			String uParticleInfo4Name       = commonUtil.fileUpload(uParticleInfo4, req);
+			String uParticleInfo5Name       = commonUtil.fileUpload(uParticleInfo5, req);
+			String uMembranePatchImg1Name   = commonUtil.fileUpload(uMembranePatchImg1, req);
+			String uMembranePatchImg2Name   = commonUtil.fileUpload(uMembranePatchImg2, req);
+			String uMembranePatchImg3Name   = commonUtil.fileUpload(uMembranePatchImg3, req);
+			String uMembranePatchImg4Name   = commonUtil.fileUpload(uMembranePatchImg4, req);
+			String uMembranePatchImg5Name   = commonUtil.fileUpload(uMembranePatchImg5, req);
+			String uMembranePatchImg6Name   = commonUtil.fileUpload(uMembranePatchImg6, req);
+			String uPatchName               = commonUtil.fileUpload(uPatch, req);
+			String uPatchExtName            = commonUtil.fileUpload(uPatchExt, req);
+			String uPatchTestName           = commonUtil.fileUpload(uPatchTest, req);
+			String uSludgeName              = commonUtil.fileUpload(uSludge, req);
+			String uBlotterName             = commonUtil.fileUpload(uBlotter, req);
+			String uRuler1Name              = commonUtil.fileUpload(uRuler1, req);
+			String uRuler2Name              = commonUtil.fileUpload(uRuler2, req);
+
+			infoMap.put("ucuttingWear", ucuttingWearName);
+			infoMap.put("ufatigueWear", uFatigueWearName);
+			infoMap.put("unonmetalicparticles", unonmetalicparticlesName);
+			infoMap.put("usevereSlidingWear", usevereSlidingWearName);
+			infoMap.put("uwater", uwaterName);
+			infoMap.put("ufiber", ufiberName);
+			infoMap.put("uParticleInfo1", uParticleInfo1Name);
+			infoMap.put("uParticleInfo2", uParticleInfo2Name);
+			infoMap.put("uParticleInfo3", uParticleInfo3Name);
+			infoMap.put("uParticleInfo4", uParticleInfo4Name);
+			infoMap.put("uParticleInfo5", uParticleInfo5Name);
+			infoMap.put("uMembranePatchImg1", uMembranePatchImg1Name);
+			infoMap.put("uMembranePatchImg2", uMembranePatchImg2Name);
+			infoMap.put("uMembranePatchImg3", uMembranePatchImg3Name);
+			infoMap.put("uMembranePatchImg4", uMembranePatchImg4Name);
+			infoMap.put("uMembranePatchImg5", uMembranePatchImg5Name);
+			infoMap.put("uMembranePatchImg6", uMembranePatchImg6Name);
+			infoMap.put("uPatch", uPatchName);
+			infoMap.put("uPatchExt", uPatchExtName);
+			infoMap.put("uPatchTest", uPatchTestName);
+			infoMap.put("uSludge", uSludgeName);
+			infoMap.put("uBlotter", uBlotterName);
+			infoMap.put("uRuler1", uRuler1Name);
+			infoMap.put("uRuler2", uRuler2Name);
+
+			if(idx != null || idx != "" || idx.length() > 0) {
+				infoMap.put("idx", idx);
+			}
+
+			infoMap.put("companyIdx", companyIdx);
+			infoMap.put("specIdx", specIdx);
+			infoMap.put("sampleIdx", sampleIdx);
+			infoMap.put("smplPoint", smplPoint);
+			infoMap.put("oilType", oilType);
+			infoMap.put("authorizer", authorizer);
+			infoMap.put("regDate", todayDate);
+			infoMap.put("register", userId);
+
+			try {
+				Map<String, Object> successMap = new HashMap<String, Object>();
+
+				Iterator<String> iterator = infoMap.keySet().iterator();
+			    while (iterator.hasNext()) {
+			        String key = iterator.next();
+			        System.out.print("key="+key);
+			        System.out.println(" value="+infoMap.get(key));
+			    }
+
+				if(type == "write" || type.equals("write")) {
+					infoService.insertSolgeInfo(infoMap);
+					successMap.put("msg", "정보입력에 성공하였습니다.");
+				} else {
+					infoService.updateSolgeInfo(infoMap);
+					successMap.put("msg", "정보수정에 성공하였습니다.");
+				}
+
+				successMap.put("url", "/info/infoList.info");
+			    mav.addObject("successMap", successMap);
+			    mav.setViewName("/common/success");
+			} catch(Exception e) {
+				e.toString();
+			}
+
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 정보 보기 화면
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/info/infoView.info")
+	public ModelAndView infoView(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		//userId = (String)session.getAttribute("userId");
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+			String idx = "";
+			int tmpidx = 0;
+			Map<String, Object> infoMap = null;
+			idx = req.getParameter("idx");
+
+			if(idx == null || idx == "" || idx.length() < 0) {
+				Map<String, Object> errorMap = new HashMap<String, Object>();
+				errorMap.put("msg", "정보가 없습니다..");
+				errorMap.put("url", "/infoMap/infoList.info");
+				mav.addObject("errorMap", errorMap);
+				mav.setViewName("/common/error");
+			} else {
+				// idx 값이 있을 경우 관련 정보를 DB에서 가져와 페이지의 각 필드에 노출
+				tmpidx = Integer.parseInt(idx);
+				infoMap = infoService.getInfoDetail(tmpidx);
+
+				if(infoMap.size() > 0) {
+					mav.addObject("idx", idx);
+					mav.addObject("infoMap", infoMap);
+					mav.addObject("type", "update");
+					mav.setViewName("/info/infoView");
+				} else {
+					Map<String, Object> errorMap = new HashMap<String, Object>();
+					errorMap.put("msg", "정보가 없습니다..");
+					errorMap.put("url", "/infoMap/infoList.info");
+					mav.addObject("errorMap", errorMap);
+					mav.setViewName("/common/error");
+				}
+			}
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 엑셀 다운로드
+	 * @param req
+	 * @param res
+	 * @throws Exception
+	 */
+	@RequestMapping("/info/infoExcelDownload.info")
+	public void infoExcelDownload(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		//userId = (String)session.getAttribute("userId");
+		System.out.println("로그인한 사용자 : " + userId);
+
+		String reportLocation = context.getRealPath("WEB-INF");
+		System.out.println("report location : " + reportLocation);
+
+		if(userId != null && userId != "") {
+			String idx = "";
+			int tmpidx = 0;
+			Map<String, Object> excelMap = null;
+			idx = req.getParameter("idx");
+			String excelgu = "excel1";
+			String path = req.getSession().getServletContext().getRealPath("/");
+
+			if(idx == null || idx == "" || idx.length() < 0) {
+
+			} else {
+				commonUtil = new CommonUtil();
+				tmpidx = Integer.parseInt(idx);
+				excelMap = infoService.getInfoDetail(tmpidx);
+				System.out.println("name : " + excelMap.get("COMPANYNAME"));
+				String excelName = "Solge_Report_" + excelMap.get("COMPANYNAME");
+				System.out.println("엑셀파일명 : " +  excelName);
+				commonUtil.excelDownload(excelMap, "", excelName, res, req, reportLocation, path, excelgu);
+			}
+		} else {
+			System.out.println("로그인이 필요한 서비스입니다.");
+		}
+	}
+
+	@RequestMapping("/info/infoDelete.info")
+	public ModelAndView deleteInfo(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		//userId = (String)session.getAttribute("userId");
+
+		if(userId != null && userId != "") {
+			String idx = "";
+			int tmpidx = 0;
+			Map<String, Object> infoMap = null;
+			idx = req.getParameter("idx");
+
+			if(idx == null || idx == "" || idx.length() < 0) {
+				ModelAndView mav = new ModelAndView();
+				Map<String, Object> errorMap = new HashMap<String, Object>();
+				errorMap.put("msg", "삭제에 실패하였습니다..");
+				errorMap.put("url", "/info/infoList.info");
+				mav.addObject("errorMap", errorMap);
+				mav.setViewName("/common/error");
+				return mav;
+			} else {
+				tmpidx = Integer.parseInt(idx);
+				infoService.deleteInfo(tmpidx);
+			}
+		} else {
+			ModelAndView mav = new ModelAndView();
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+			return mav;
+		}
+
+		return new ModelAndView("redirect:/info/infoList.info");
+	}
+
+	@RequestMapping("/info/infoAnalysis.info")
+	public ModelAndView infoAnalysis(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		ModelAndView mav = new ModelAndView();
+
+		userId = loginBean.getUserId();
+		//userId = (String)session.getAttribute("userId");
+
+		if(userId != null && userId != "") {
+			sData = new StandardData();
+			System.out.println(sData.getAw1());
+			int companyIdx = 0;
+			int specIdx = 0;
+			int sampleIdx = 0;
+			int colspan = 2;
+			String searchCol = "";
+			String tmpCompanyIdx = req.getParameter("companyIdx");
+			String tmpSpecIdx = req.getParameter("specIdx");
+			String tmpSampleIdx = req.getParameter("sampleIdx");
+			String startDate = req.getParameter("startDate");
+			String endDate = req.getParameter("endDate");
+			String searchKey = req.getParameter("searchKey");
+			String companyName = req.getParameter("companyName");
+			String specName = req.getParameter("specName");
+			String sampleName = req.getParameter("sampleName");
+			String smplPoint = req.getParameter("smplPoint");
+			String manager = "";
+			String smplDate = "";
+
+			List<Map> analysisList = null;
+			Map analysisMap = new HashMap();
+
+			if(searchKey != null && !searchKey.equals("")) {
+
+				analysisMap.put("searchKey", searchKey);
+				if(tmpCompanyIdx != "" && tmpCompanyIdx != null) {
+					companyIdx = Integer.parseInt(tmpCompanyIdx);
+					Map<String, Object> customerMap = customerService.getCustomerInfo(companyIdx);
+					if(customerMap != null) {
+						manager = (String) customerMap.get("MANAGER");
+					}
+				}
+				analysisMap.put("companyIdx", companyIdx);
+
+				if(tmpSpecIdx != "" && tmpSpecIdx != null) {
+					specIdx = Integer.parseInt(tmpSpecIdx);
+				}
+				analysisMap.put("specIdx", specIdx);
+
+				if(tmpSampleIdx != "" && tmpSampleIdx != null) {
+					sampleIdx = Integer.parseInt(tmpSampleIdx);
+				}
+
+				searchCol = req.getParameter("searchCol");
+				String[] searchColVal = searchCol.split(",");
+				int searchColSize = 0;
+				searchColSize = searchColVal.length;
+				System.out.println("searchColSize : " + searchColSize);
+				if(searchColSize >= 2) {
+					colspan = searchColSize;
+				}
+
+				String startDate1 = "";
+				String endDate1 = "";
+
+				if(startDate != null && startDate != "") {
+					startDate1 = startDate.replace("-", "") + "000000";
+				}
+
+				if(endDate != null && endDate != "") {
+					endDate1 = endDate.replace("-", "") + "235959";
+				}
+
+				analysisMap.put("sampleIdx", sampleIdx);
+				analysisMap.put("startDate", startDate1);
+				analysisMap.put("endDate", endDate1);
+				analysisMap.put("colName", searchCol);
+
+				analysisList = infoService.getAnalysisList(analysisMap);
+
+				Map resultMap = new HashMap<String, Object>();
+
+				if(analysisList != null) {
+					for(int j=0; j < searchColVal.length; j++) {
+						String[] colVal = null;
+						List<String> colValList = new ArrayList<String>();
+						for(int i =0; i < analysisList.size(); i++) {
+							colValList.add((String)analysisList.get(i).get(searchColVal[j]));
+						}
+						colVal = colValList.toArray(new String[colValList.size()]);
+						System.out.println("배열값" + Arrays.toString(colVal));
+						resultMap.put(searchColVal[j], Arrays.toString(colVal));
+					}
+
+					List<String> dateList = new ArrayList<String>();
+					Object[] dateVal = null;
+					for(int nn=0; nn < analysisList.size(); nn++) {
+						dateList.add(analysisList.get(nn).get("regdate").toString().substring(0, 4) + "-" + analysisList.get(nn).get("regdate").toString().substring(4, 6) + "-" + analysisList.get(nn).get("regdate").toString().substring(6, 8));
+					}
+					dateVal = dateList.toArray(new Object[dateList.size()]);
+					resultMap.put("regdate", Arrays.toString(dateVal));
+					resultMap.put("regdate2", dateVal);
+					System.out.println("날짜배열값" + Arrays.toString(dateVal));
+					System.out.println("날짜배열값" + dateVal);
+				}
+				mav.addObject("resultMap", resultMap);
+				System.out.println("resultMap data : " + resultMap);
+			}
+
+			List<Map> customerList = customerService.getList();
+			List<Map> colList = infoService.getColumnName();
+			Map colMap = new HashMap();
+			for(int i=0; i < colList.size(); i++) {
+				colMap.put(colList.get(i).get("COLUMN_NAME"), colList.get(i).get("COLUMN_NAME"));
+			}
+
+			if(startDate != null) {
+				mav.addObject("startDate", startDate);
+			}
+
+			if(endDate != null) {
+				mav.addObject("endDate", endDate);
+			}
+
+			mav.addObject("analysisList", analysisList);
+			mav.addObject("colList", colList);
+			mav.addObject("customerList", customerList);
+			mav.addObject("colMap", colMap);
+			mav.addObject("colspan", colspan);
+			mav.addObject("companyIdx", companyIdx);
+			mav.addObject("specIdx", specIdx);
+			mav.addObject("sampleIdx", sampleIdx);
+			mav.addObject("searchCol", searchCol);
+			mav.addObject("companyName", companyName);
+			mav.addObject("specName", specName);
+			mav.addObject("sampleName", sampleName);
+			mav.addObject("smplPoint", smplPoint);
+			mav.addObject("manager", manager);
+			mav.setViewName("/info/infoAnalysis");
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	@RequestMapping("/ajax/infoAnalysisExcel.info")
+	public void infoAnalysisExcel(HttpServletRequest req, HttpServletResponse res)  throws Exception {
+
+		userId = loginBean.getUserId();
+		//userId = (String)session.getAttribute("userId");
+		System.out.println("로그인한 사용자 : " + userId);
+
+		String reportLocation = context.getRealPath("WEB-INF");
+		System.out.println("report location : " + reportLocation);
+		String path = req.getSession().getServletContext().getRealPath("/");
+
+		if(userId != null && userId != "") {
+
+			commonUtil = new CommonUtil();
+			int companyIdx = 0;
+			int specIdx = 0;
+			int sampleIdx = 0;
+			int colspan = 2;
+			String searchCol = "";
+			String tmpCompanyIdx = req.getParameter("companyIdx");
+			String tmpSpecIdx = req.getParameter("specIdx");
+			String tmpSampleIdx = req.getParameter("sampleIdx");
+			String startDate = req.getParameter("startDate");
+			String endDate = req.getParameter("endDate");
+			String searchKey = req.getParameter("searchKey");
+			String companyName = req.getParameter("companyName");
+			String specName = req.getParameter("specName");
+			String sampleName = req.getParameter("sampleName");
+			String manager = req.getParameter("manager");
+			String smplPoint = req.getParameter("smplPoint");
+			String smplDate = "";
+			String excelName = "WearCheck_Report";
+			String excelgu = "excel2";
+			String standardCol = "";
+			String standard1 = req.getParameter("standard1");
+			String standard2 = req.getParameter("standard2");
+			String standard3 = req.getParameter("standard3");
+			String standard4 = req.getParameter("standard4");
+			String standard5 = req.getParameter("standard5");
+			String cvalue = req.getParameter("cvalue");
+
+			List<Map> analysisList = null;
+			Map analysisMap = new HashMap();
+
+			if(searchKey != null && !searchKey.equals("")) {
+
+				analysisMap.put("searchKey", searchKey);
+				if(tmpCompanyIdx != "" && tmpCompanyIdx != null) {
+					companyIdx = Integer.parseInt(tmpCompanyIdx);
+					Map<String, Object> customerMap = customerService.getCustomerInfo(companyIdx);
+					if(customerMap != null) {
+						manager = (String) customerMap.get("MANAGER");
+						companyName = (String) customerMap.get("COMPANYNAME");
+					}
+				}
+				analysisMap.put("companyIdx", companyIdx);
+
+				if(tmpSpecIdx != "" && tmpSpecIdx != null) {
+					specIdx = Integer.parseInt(tmpSpecIdx);
+				}
+				analysisMap.put("specIdx", specIdx);
+
+				if(tmpSampleIdx != "" && tmpSampleIdx != null) {
+					sampleIdx = Integer.parseInt(tmpSampleIdx);
+					smplDate = infoService.getSmplDate(sampleIdx);
+				}
+
+				searchCol = req.getParameter("searchCol");
+				String[] searchColVal = searchCol.split(",");
+				int searchColSize = 0;
+				searchColSize = searchColVal.length;
+				System.out.println("searchColSize : " + searchColSize);
+				if(searchColSize >= 2) {
+					colspan = searchColSize;
+				}
+
+				String startDate1 = "";
+				String endDate1 = "";
+
+				if(startDate != null && startDate != "") {
+					startDate1 = startDate.replace("-", "") + "000000";
+				}
+
+				if(endDate != null && endDate != "") {
+					endDate1 = endDate.replace("-", "") + "235959";
+				}
+
+				analysisMap.put("sampleIdx", sampleIdx);
+				analysisMap.put("startDate", startDate1);
+				analysisMap.put("endDate", endDate1);
+				analysisMap.put("colName", searchCol);
+
+				analysisList = infoService.getAnalysisList(analysisMap);
+
+				Map resultMap = new HashMap<String, Object>();
+				List oilList = new ArrayList();
+				List conList = new ArrayList();
+				List wearList = new ArrayList();
+
+				List pcountList1 = new ArrayList();
+				List pcountList2 = new ArrayList();
+				List pcountList3 = new ArrayList();
+				List pcountList4 = new ArrayList();
+				List pcountList5 = new ArrayList();
+				List pcountList6 = new ArrayList();
+				List cuttingList1 = new ArrayList();
+				List cuttingList2 = new ArrayList();
+				List cuttingList3 = new ArrayList();
+				List cuttingList4 = new ArrayList();
+				List fatigueList1 = new ArrayList();
+				List fatigueList2 = new ArrayList();
+				List fatigueList3 = new ArrayList();
+				List fatigueList4 = new ArrayList();
+				List severeList1 = new ArrayList();
+				List severeList2 = new ArrayList();
+				List severeList3 = new ArrayList();
+				List severeList4 = new ArrayList();
+				List nonmetalicList1 = new ArrayList();
+				List nonmetalicList2 = new ArrayList();
+				List nonmetalicList3 = new ArrayList();
+				List nonmetalicList4 = new ArrayList();
+				List numparticleList1 = new ArrayList();
+				List numparticleList2 = new ArrayList();
+				List numparticleList3 = new ArrayList();
+				List numparticleList4 = new ArrayList();
+				List numparticleList5 = new ArrayList();
+				List water = new ArrayList();
+				List chlorine = new ArrayList();
+				List mpc1 = new ArrayList();
+				List mpc2 = new ArrayList();
+				List mpc3 = new ArrayList();
+				List patch = new ArrayList();
+				List silicon = new ArrayList();
+				List boron = new ArrayList();
+				List sodium = new ArrayList();
+				List abs1 = new ArrayList();
+				List abs2 = new ArrayList();
+				List abs3 = new ArrayList();
+				List abs4 = new ArrayList();
+				List abs5 = new ArrayList();
+				List abs6 = new ArrayList();
+				List abs7 = new ArrayList();
+				List abs8 = new ArrayList();
+
+				List viscosityList1 = new ArrayList();
+				List viscosityList2 = new ArrayList();
+				List viscosityList3 = new ArrayList();
+				List acid = new ArrayList();
+				List specific = new ArrayList();
+				List ruler1 = new ArrayList();
+				List ruler2 = new ArrayList();
+				List ruler3 = new ArrayList();
+				List rulernumber = new ArrayList();
+				List foaming1 = new ArrayList();
+				List foaming2 = new ArrayList();
+				List foaming3 = new ArrayList();
+				List water2 = new ArrayList();
+				List pour = new ArrayList();
+				List flash1 = new ArrayList();
+				List flash2 = new ArrayList();
+				List mg = new ArrayList();
+				List ca = new ArrayList();
+				List ba = new ArrayList();
+				List ph = new ArrayList();
+				List zn = new ArrayList();
+				List additive1 = new ArrayList();
+				List additive2 = new ArrayList();
+				List additive3 = new ArrayList();
+				List additive4 = new ArrayList();
+
+				List fe = new ArrayList();
+				List cr = new ArrayList();
+				List pb = new ArrayList();
+				List cu = new ArrayList();
+				List sn = new ArrayList();
+				List al = new ArrayList();
+				List ni = new ArrayList();
+				List ag = new ArrayList();
+				List mo = new ArrayList();
+				List ti = new ArrayList();
+				List vana = new ArrayList();
+				List pqList = new ArrayList();
+
+				String pcon1 = "";
+				String pcon2 = "";
+				String wcon1 = "";
+				String wcon2 = "";
+				String an1 = "";
+				String an2 = "";
+				String visco1 = "";
+				String visco2 = "";
+				String pq = "";
+				double vis1 = 0;
+				double vis2 = 0;
+				double vis3 = 0;
+				double vis4 = 0;
+
+				System.out.println(standard1);
+				System.out.println(standard2);
+				System.out.println(standard3);
+				System.out.println(standard4);
+				System.out.println(standard5);
+				if(standard1.equals("phydraulic")) {
+					pcon1 = phydraulic1;
+					pcon2 = phydraulic2;
+				} else if(standard1.equals("pgear")) {
+					pcon1 = pgear1;
+					pcon2 = pgear2;
+				} else if(standard1.equals("pengine")) {
+					pcon1 = pengine1;
+					pcon2 = pengine2;
+				} else if(standard1.equals("pturbine")) {
+					pcon1 = pturbine1;
+					pcon2 = pturbine2;
+				} else if(standard1.equals("pbearing")) {
+					pcon1 = pbearing1;
+					pcon2 = pbearing2;
+				}
+				System.out.println(pcon1);
+				System.out.println(pcon2);
+
+				if(standard2.equals("whydraulic")) {
+					wcon1 = whydraulic1;
+					wcon2 = whydraulic2;
+				} else if(standard2.equals("wgear")) {
+					wcon1 = wgear1;
+					wcon2 = wgear2;
+				} else if(standard2.equals("wengine")) {
+					wcon1 = wengine1;
+					wcon2 = wengine2;
+				} else if(standard2.equals("wturbine")) {
+					wcon1 = wturbine1;
+					wcon2 = wturbine2;
+				} else if(standard2.equals("wair")) {
+					wcon1 = wair1;
+					wcon2 = wair2;
+				} else if(standard2.equals("weht")) {
+					wcon1 = weht1;
+					wcon2 = weht2;
+				}
+				System.out.println(wcon1);
+				System.out.println(wcon2);
+
+				if(standard3.equals("zddp")) {
+					an1 = zddp1;
+					an2 = zddp2;
+				} else if(standard3.equals("aw")) {
+					an1 = aw1;
+					an2 = aw2;
+				} else if(standard3.equals("volume")) {
+					an1 = volume1;
+					an2 = volume2;
+				} else if(standard3.equals("kzddp")) {
+					an1 = kzddp1;
+					an2 = kzddp2;
+				} else if(standard3.equals("kaw")) {
+					an1 = kaw1;
+					an2 = kaw2;
+				} else if(standard3.equals("kvolume")) {
+					an1 = kvolume1;
+					an2 = kvolume2;
+				}
+				System.out.println(an1);
+				System.out.println(an2);
+
+				if(standard4.equals("viscosity")) {
+					visco1 = viscosity1;
+					visco2 = viscosity2;
+				} else if(standard4.equals("kviscosity")) {
+					visco1 = kviscosity1;
+					visco2 = kviscosity2;
+				} else if(standard4.equals("cviscosity")) {
+					if(cvalue != null && cvalue != "") {
+						vis1 = Integer.parseInt(cvalue) * cviscosityA;
+						vis2 = Integer.parseInt(cvalue) * cviscosityB;
+						vis3 = Integer.parseInt(cvalue) * cviscosityC;
+						vis4 = Integer.parseInt(cvalue) * cviscosityD;
+						visco1 = String.valueOf(vis1) + " " + String.valueOf(vis2);
+						visco2 = String.valueOf(vis3) + " " + String.valueOf(vis4);
+					}
+				}
+				System.out.println(visco1);
+				System.out.println(visco2);
+
+				if(standard5.equals("engine")) {
+					pq = engine;
+				} else if(standard5.equals("trucks")) {
+					pq = trucks;
+				} else if(standard5.equals("loaders")) {
+					pq = loaders;
+				} else if(standard5.equals("tractors")) {
+					pq = tractors;
+				} else if(standard5.equals("transmissions")) {
+					pq = transmissions;
+				} else if(standard5.equals("oilpressure")) {
+					pq = oilpressure;
+				} else if(standard5.equals("gearbox")) {
+					pq = gearbox;
+				} else if(standard5.equals("rolling")) {
+					pq = rolling;
+				}
+				System.out.println(pq);
+
+				if(analysisList != null) {
+					for(int j=0; j < searchColVal.length; j++) {
+						String[] colVal = null;
+						List<String> colValList = new ArrayList<String>();
+//						if(searchColVal[j].equals("p4um")) {
+//							//colValList.add(searchColVal[j]);
+//							colValList.add("4um (c)");
+//						} else if(searchColVal[j].equals("p6um")) {
+//							colValList.add("6um (c)");
+//						} else if(searchColVal[j].equals("p14um")) {
+//							colValList.add("14um (c)");
+//						} else if(searchColVal[j].equals("p21um")) {
+//							colValList.add("21um (c)");
+//						} else if(searchColVal[j].equals("p38um")) {
+//							colValList.add("38um (c)");
+//						} else if(searchColVal[j].equals("p70um")) {
+//							colValList.add("70um");
+//						} else if(searchColVal[j].equals("ccount")) {
+//							colValList.add("Counts");
+//						} else if(searchColVal[j].equals("caverage")) {
+//							colValList.add("Average");
+//						} else if(searchColVal[j].equals("cstd")) {
+//							colValList.add("STD");
+//						} else if(searchColVal[j].equals("cmaxsize")) {
+//							colValList.add("Max size");
+//						} else if(searchColVal[j].equals("scount")) {
+//							colValList.add("Counts");
+//						} else if(searchColVal[j].equals("saverage")) {
+//							colValList.add("Average");
+//						} else if(searchColVal[j].equals("sstd")) {
+//							colValList.add("STD");
+//						} else if(searchColVal[j].equals("smaxsize")) {
+//							colValList.add("Max size");
+//						} else if(searchColVal[j].equals("fcount")) {
+//							colValList.add("Counts");
+//						} else if(searchColVal[j].equals("faverage")) {
+//							colValList.add("Average");
+//						} else if(searchColVal[j].equals("fstd")) {
+//							colValList.add("STD");
+//						} else if(searchColVal[j].equals("fmaxsize")) {
+//							colValList.add("Max size");
+//						} else if(searchColVal[j].equals("ncount")) {
+//							colValList.add("Counts");
+//						} else if(searchColVal[j].equals("naverage")) {
+//							colValList.add("Average");
+//						} else if(searchColVal[j].equals("nstd")) {
+//							colValList.add("STD");
+//						} else if(searchColVal[j].equals("five")) {
+//							colValList.add("5-15um");
+//						} else if(searchColVal[j].equals("fifteen")) {
+//							colValList.add("15-25um");
+//						} else if(searchColVal[j].equals("twentyfive")) {
+//							colValList.add("25-50um");
+//						} else if(searchColVal[j].equals("fifty")) {
+//							colValList.add("50-100um");
+//						} else if(searchColVal[j].equals("hundred")) {
+//							colValList.add("100um");
+//						} else if(searchColVal[j].equals("water")) {
+//							colValList.add("Water");
+//						} else if(searchColVal[j].equals("chlorine")) {
+//							colValList.add("Chlorine");
+//						} else if(searchColVal[j].equals("impcval")) {
+//							colValList.add("iMPC Value");
+//						} else if(searchColVal[j].equals("mpcval")) {
+//							colValList.add("MPC Value");
+//						} else if(searchColVal[j].equals("eval")) {
+//							colValList.add("평가");
+//						} else if(searchColVal[j].equals("mpcweight")) {
+//							colValList.add("MPC weight");
+//						} else if(searchColVal[j].equals("siliconrde")) {
+//							colValList.add("RDE");
+//						} else if(searchColVal[j].equals("siliconrfs")) {
+//							colValList.add("RFS");
+//						} else if(searchColVal[j].equals("boronrde")) {
+//							colValList.add("RDE");
+//						} else if(searchColVal[j].equals("boronrfs")) {
+//							colValList.add("RFS");
+//						} else if(searchColVal[j].equals("sodiumrde")) {
+//							colValList.add("RDE");
+//						} else if(searchColVal[j].equals("sodiumrfs")) {
+//							colValList.add("RFS");
+//						} else if(searchColVal[j].equals("oxidation")) {
+//							colValList.add("Oxidation ASTM");
+//						} else if(searchColVal[j].equals("detergent")) {
+//							colValList.add("Detergent(sulfonate)");
+//						} else if(searchColVal[j].equals("diesel")) {
+//							colValList.add("Diesel ASTM");
+//						} else if(searchColVal[j].equals("ethylene")) {
+//							colValList.add("Ethylene Glycol Coolant ASTM");
+//						} else if(searchColVal[j].equals("nitration")) {
+//							colValList.add("Nitration ASTM");
+//						} else if(searchColVal[j].equals("sootloading")) {
+//							colValList.add("Soot Loading ASTM Soot (% w/w)");
+//						} else if(searchColVal[j].equals("sulfate")) {
+//							colValList.add("Sulfate by products ASTM");
+//						} else if(searchColVal[j].equals("waterastm")) {
+//							colValList.add("Water (ASTM Petroluem  Lubricant)");
+//						} else if(searchColVal[j].equals("viscosity40")) {
+//							colValList.add("Viscosity@40℃");
+//						} else if(searchColVal[j].equals("viscosity100")) {
+//							colValList.add("Viscosity@100℃");
+//						} else if(searchColVal[j].equals("viscosityindex")) {
+//							colValList.add("Viscosity Index");
+//						} else if(searchColVal[j].equals("acidnumber")) {
+//							colValList.add("Acid Number");
+//						} else if(searchColVal[j].equals("specificgravity")) {
+//							colValList.add("Specific Gravity");
+//						} else if(searchColVal[j].equals("rul1peak")) {
+//							colValList.add("RUL1_Peak1");
+//						} else if(searchColVal[j].equals("rul2peak")) {
+//							colValList.add("RUL2_Peak2");
+//						} else if(searchColVal[j].equals("rulareatotal")) {
+//							colValList.add("RUL AREA_TOTAL");
+//						} else if(searchColVal[j].equals("rulernumber")) {
+//							colValList.add("RULER NUMBER");
+//						} else if(searchColVal[j].equals("tendency")) {
+//							colValList.add("24℃ (tendency < 450ml)");
+//						} else if(searchColVal[j].equals("stability")) {
+//							colValList.add("93.5℃ (stability 0ml(Nil))");
+//						} else if(searchColVal[j].equals("nil")) {
+//							colValList.add("24℃ (stability 0ml(Nil))");
+//						} else if(searchColVal[j].equals("waterseparability")) {
+//							colValList.add("Water separability");
+//						} else if(searchColVal[j].equals("pourpoint")) {
+//							colValList.add("Pour point");
+//						} else if(searchColVal[j].equals("flashpoint")) {
+//							colValList.add("Flash point");
+//						} else if(searchColVal[j].equals("flashpoint2")) {
+//							colValList.add("Flash point");
+//						} else if(searchColVal[j].equals("mgrde")) {
+//							colValList.add("RDE");
+//						} else if(searchColVal[j].equals("mgrfs")) {
+//							colValList.add("RFS");
+//						} else if(searchColVal[j].equals("carde")) {
+//							colValList.add("RDE");
+//						} else if(searchColVal[j].equals("carfs")) {
+//							colValList.add("RFS");
+//						} else if(searchColVal[j].equals("barde")) {
+//							colValList.add("RDE");
+//						} else if(searchColVal[j].equals("barfs")) {
+//							colValList.add("RFS");
+//						} else if(searchColVal[j].equals("prde")) {
+//							colValList.add("RDE");
+//						} else if(searchColVal[j].equals("prfs")) {
+//							colValList.add("RFS");
+//						} else if(searchColVal[j].equals("znrde")) {
+//							colValList.add("RDE");
+//						} else if(searchColVal[j].equals("znrfs")) {
+//							colValList.add("RFS");
+//						} else if(searchColVal[j].equals("antiwater")) {
+//							colValList.add("Antiwear ASTM");
+//						} else if(searchColVal[j].equals("phenol")) {
+//							colValList.add("Phenol Antioxidant");
+//						} else if(searchColVal[j].equals("rust")) {
+//							colValList.add("Rust Inhibitor(Succinic acid)");
+//						} else if(searchColVal[j].equals("dispersant")) {
+//							colValList.add("Dispersant(Succinimide)");
+//						} else if(searchColVal[j].equals("ferde")) {
+//							colValList.add("RDE");
+//						} else if(searchColVal[j].equals("ferfs")) {
+//							colValList.add("RFS");
+//						} else if(searchColVal[j].equals("crrde")) {
+//							colValList.add("RDE");
+//						} else if(searchColVal[j].equals("crrfs")) {
+//							colValList.add("RFS");
+//						} else if(searchColVal[j].equals("pbrde")) {
+//							colValList.add("RDE");
+//						} else if(searchColVal[j].equals("pbrfs")) {
+//							colValList.add("RFS");
+//						} else if(searchColVal[j].equals("curde")) {
+//							colValList.add("RDE");
+//						} else if(searchColVal[j].equals("curfs")) {
+//							colValList.add("RFS");
+//						} else if(searchColVal[j].equals("snrde")) {
+//							colValList.add("RDE");
+//						} else if(searchColVal[j].equals("snrfs")) {
+//							colValList.add("RFS");
+//						} else if(searchColVal[j].equals("alrde")) {
+//							colValList.add("RDE");
+//						} else if(searchColVal[j].equals("alrfs")) {
+//							colValList.add("RFS");
+//						} else if(searchColVal[j].equals("nirde")) {
+//							colValList.add("RDE");
+//						} else if(searchColVal[j].equals("nirfs")) {
+//							colValList.add("RFS");
+//						} else if(searchColVal[j].equals("agrde")) {
+//							colValList.add("RDE");
+//						} else if(searchColVal[j].equals("agrfs")) {
+//							colValList.add("RFS");
+//						} else if(searchColVal[j].equals("morde")) {
+//							colValList.add("RDE");
+//						} else if(searchColVal[j].equals("morfs")) {
+//							colValList.add("RFS");
+//						} else if(searchColVal[j].equals("tirde")) {
+//							colValList.add("RDE");
+//						} else if(searchColVal[j].equals("tirfs")) {
+//							colValList.add("RFS");
+//						} else if(searchColVal[j].equals("vrde")) {
+//							colValList.add("RDE");
+//						} else if(searchColVal[j].equals("vrfs")) {
+//							colValList.add("RFS");
+//						} else if(searchColVal[j].equals("pqindex")) {
+//							colValList.add("PQ index");
+//						} else {
+//							colValList.add("");
+//						}
+
+//						if(searchColVal[j].equals("pqindex") || searchColVal[j].equals("viscosity40") || searchColVal[j].equals("viscosity100") || searchColVal[j].equals("viscosityindex") || searchColVal[j].equals("acidnumber") || searchColVal[j].equals("water") || searchColVal[j].equals("p4um") || searchColVal[j].equals("p6um") || searchColVal[j].equals("p14um") || searchColVal[j].equals("p21um") || searchColVal[j].equals("p38um") || searchColVal[j].equals("p70um")) {
+//
+//							if(searchColVal[j].equals("water")) {
+//								colValList.add(wcon1);
+//								colValList.add(wcon2);
+//							} else if(searchColVal[j].equals("acidnumber")) {
+//								colValList.add(an1);
+//								colValList.add(an2);
+//							} else if(searchColVal[j].equals("viscosity40") || searchColVal[j].equals("viscosity100") || searchColVal[j].equals("viscosityindex")) {
+//								colValList.add(visco1);
+//								colValList.add(visco2);
+//							} else if(searchColVal[j].equals("pqindex")) {
+//								colValList.add("");
+//								colValList.add(pq);
+//							} else {
+//								colValList.add("");
+//								colValList.add("");
+//							}
+//
+//						} else {
+//							colValList.add("");
+//							colValList.add("");
+//						}
+
+						for(int i =0; i < analysisList.size(); i++) {
+							colValList.add((String)analysisList.get(i).get(searchColVal[j]));
+						}
+						colVal = colValList.toArray(new String[colValList.size()]);
+						if(searchColVal[j].equals("viscosity40") || searchColVal[j].equals("viscosity100") || searchColVal[j].equals("viscosityindex") || searchColVal[j].equals("acidnumber") || searchColVal[j].equals("specificgravity") || searchColVal[j].equals("rul1peak") || searchColVal[j].equals("rul2peak") || searchColVal[j].equals("rulareatotal") || searchColVal[j].equals("rulernumber") || searchColVal[j].equals("tendency") || searchColVal[j].equals("stability") || searchColVal[j].equals("nil") || searchColVal[j].equals("waterseparability") || searchColVal[j].equals("pourpoint") || searchColVal[j].equals("flashpoint") || searchColVal[j].equals("flashpoint2") || searchColVal[j].equals("mgrde") || searchColVal[j].equals("mgrfs") || searchColVal[j].equals("carde") || searchColVal[j].equals("carfs") || searchColVal[j].equals("barde") || searchColVal[j].equals("barfs") || searchColVal[j].equals("prde") || searchColVal[j].equals("prfs") || searchColVal[j].equals("znrde") || searchColVal[j].equals("znrfs") || searchColVal[j].equals("antiwater") || searchColVal[j].equals("phenol") || searchColVal[j].equals("rust") || searchColVal[j].equals("dispersant")) {
+							oilList.add(colVal);
+						} else if(searchColVal[j].equals("ferde") || searchColVal[j].equals("ferfs") || searchColVal[j].equals("crrde") || searchColVal[j].equals("crrfs") || searchColVal[j].equals("pbrde") || searchColVal[j].equals("pbrfs") || searchColVal[j].equals("curde") || searchColVal[j].equals("curfs") || searchColVal[j].equals("snrde") || searchColVal[j].equals("snrfs") || searchColVal[j].equals("alrde") || searchColVal[j].equals("alrfs") || searchColVal[j].equals("nirde") || searchColVal[j].equals("nirfs") || searchColVal[j].equals("agrde") || searchColVal[j].equals("agrfs") || searchColVal[j].equals("morde") || searchColVal[j].equals("morfs") || searchColVal[j].equals("tirde") || searchColVal[j].equals("tirfs") || searchColVal[j].equals("vrde") || searchColVal[j].equals("vrfs") || searchColVal[j].equals("pqindex")) {
+							wearList.add(colVal);
+						} else {
+							conList.add(colVal);
+						}
+
+						if(searchColVal[j].equals("p4um") || searchColVal[j].equals("p6um") || searchColVal[j].equals("p14um") || searchColVal[j].equals("p21um") || searchColVal[j].equals("p38um") || searchColVal[j].equals("p70um")) {
+							//pcountList.add(colVal);
+							if(searchColVal[j].equals("p4um")) {
+								pcountList1.add(colVal);
+							} else if(searchColVal[j].equals("p6um")) {
+								pcountList2.add(colVal);
+							} else if(searchColVal[j].equals("p14um")) {
+								pcountList3.add(colVal);
+							} else if(searchColVal[j].equals("p21um")) {
+								pcountList4.add(colVal);
+							} else if(searchColVal[j].equals("p38um")) {
+								pcountList5.add(colVal);
+							} else {
+								pcountList6.add(colVal);
+							}
+						} else if(searchColVal[j].equals("ccount") || searchColVal[j].equals("caverage") || searchColVal[j].equals("cstd") || searchColVal[j].equals("cmaxsize")) {
+							//cuttingList.add(colVal);
+							if(searchColVal[j].equals("ccount")) {
+								cuttingList1.add(colVal);
+							} else if(searchColVal[j].equals("caverage")) {
+								cuttingList2.add(colVal);
+							} else if(searchColVal[j].equals("cstd")) {
+								cuttingList3.add(colVal);
+							} else {
+								cuttingList4.add(colVal);
+							}
+						} else if(searchColVal[j].equals("scount") || searchColVal[j].equals("saverage") || searchColVal[j].equals("sstd") || searchColVal[j].equals("smaxsize")) {
+							//severeList.add(colVal);
+							if(searchColVal[j].equals("scount")) {
+								severeList1.add(colVal);
+							} else if(searchColVal[j].equals("saverage")) {
+								severeList2.add(colVal);
+							} else if(searchColVal[j].equals("sstd")) {
+								severeList3.add(colVal);
+							} else {
+								severeList4.add(colVal);
+							}
+						} else if(searchColVal[j].equals("fcount") || searchColVal[j].equals("faverage") || searchColVal[j].equals("fstd") || searchColVal[j].equals("fmaxsize")) {
+							//fatigueList.add(colVal);
+							if(searchColVal[j].equals("fcount")) {
+								fatigueList1.add(colVal);
+							} else if(searchColVal[j].equals("faverage")) {
+								fatigueList2.add(colVal);
+							} else if(searchColVal[j].equals("fstd")) {
+								fatigueList3.add(colVal);
+							} else {
+								fatigueList4.add(colVal);
+							}
+						} else if(searchColVal[j].equals("ncount") || searchColVal[j].equals("naverage") || searchColVal[j].equals("nstd") || searchColVal[j].equals("nmaxsize")) {
+							//nonmetalicList.add(colVal);
+							if(searchColVal[j].equals("ncount")) {
+								nonmetalicList1.add(colVal);
+							} else if(searchColVal[j].equals("naverage")) {
+								nonmetalicList2.add(colVal);
+							} else if(searchColVal[j].equals("nstd")) {
+								nonmetalicList3.add(colVal);
+							} else {
+								nonmetalicList4.add(colVal);
+							}
+						} else if(searchColVal[j].equals("five") || searchColVal[j].equals("fifteen") || searchColVal[j].equals("twentyfive") || searchColVal[j].equals("fifty") || searchColVal[j].equals("hundred")) {
+							//numparticleList.add(colVal);
+							if(searchColVal[j].equals("five")) {
+								numparticleList1.add(colVal);
+							} else if(searchColVal[j].equals("fifteen")) {
+								numparticleList2.add(colVal);
+							} else if(searchColVal[j].equals("twentyfive")) {
+								numparticleList3.add(colVal);
+							} else if(searchColVal[j].equals("fifty")) {
+								numparticleList4.add(colVal);
+							} else {
+								numparticleList5.add(colVal);
+							}
+						} else if(searchColVal[j].equals("water")) {
+							water.add(colVal);
+						} else if(searchColVal[j].equals("chlorine")) {
+							chlorine.add(colVal);
+						} else if(searchColVal[j].equals("impcval") || searchColVal[j].equals("mpcval") || searchColVal[j].equals("eval")) {
+							//mpc.add(colVal);
+							if(searchColVal[j].equals("impcval")) {
+								mpc1.add(colVal);
+							} else if(searchColVal[j].equals("mpcval")) {
+								mpc2.add(colVal);
+							} else {
+								mpc3.add(colVal);
+							}
+						} else if(searchColVal[j].equals("mpcweight")) {
+							patch.add(colVal);
+						} else if(searchColVal[j].equals("siliconrde") || searchColVal[j].equals("siliconrfs")) {
+							silicon.add(colVal);
+						} else if(searchColVal[j].equals("boronrde") || searchColVal[j].equals("boronrfs")) {
+							boron.add(colVal);
+						} else if(searchColVal[j].equals("sodiumrde") || searchColVal[j].equals("sodiumrfs")) {
+							sodium.add(colVal);
+						} else if(searchColVal[j].equals("oxidation") || searchColVal[j].equals("detergent") || searchColVal[j].equals("diesel") || searchColVal[j].equals("ethylene") || searchColVal[j].equals("nitration") || searchColVal[j].equals("sootloading") || searchColVal[j].equals("sulfate") || searchColVal[j].equals("waterastm")) {
+							//abs.add(colVal);
+							if(searchColVal[j].equals("oxidation")) {
+								abs1.add(colVal);
+							} else if(searchColVal[j].equals("detergent")) {
+								abs2.add(colVal);
+							} else if(searchColVal[j].equals("diesel")) {
+								abs3.add(colVal);
+							} else if(searchColVal[j].equals("ethylene")) {
+								abs4.add(colVal);
+							} else if(searchColVal[j].equals("nitration")) {
+								abs5.add(colVal);
+							} else if(searchColVal[j].equals("sootloading")) {
+								abs6.add(colVal);
+							} else if(searchColVal[j].equals("sulfate")) {
+								abs7.add(colVal);
+							} else {
+								abs8.add(colVal);
+							}
+						} else if(searchColVal[j].equals("viscosity40") || searchColVal[j].equals("viscosity100") || searchColVal[j].equals("viscosityindex")) {
+							//viscosity.add(colVal);
+							if(searchColVal[j].equals("viscosity40")) {
+								viscosityList1.add(colVal);
+							} else if(searchColVal[j].equals("viscosity100")) {
+								viscosityList2.add(colVal);
+							} else {
+								viscosityList3.add(colVal);
+							}
+						} else if(searchColVal[j].equals("acidnumber")) {
+							acid.add(colVal);
+						} else if(searchColVal[j].equals("specificgravity")) {
+							specific.add(colVal);
+						} else if(searchColVal[j].equals("rul1peak") || searchColVal[j].equals("rul2peak") || searchColVal[j].equals("rulareatotal")) {
+							//ruler.add(colVal);
+							if(searchColVal[j].equals("rul1peak")) {
+								ruler1.add(colVal);
+							} else if(searchColVal[j].equals("rul2peak")) {
+								ruler2.add(colVal);
+							} else {
+								ruler3.add(colVal);
+							}
+						} else if(searchColVal[j].equals("rulernumber")) {
+							rulernumber.add(colVal);
+						} else if(searchColVal[j].equals("tendency") || searchColVal[j].equals("stability") || searchColVal[j].equals("nil")) {
+							//foaming.add(colVal);
+							if(searchColVal[j].equals("tendency")) {
+								foaming1.add(colVal);
+							} else if(searchColVal[j].equals("stability")) {
+								foaming2.add(colVal);
+							} else {
+								foaming3.add(colVal);
+							}
+						} else if(searchColVal[j].equals("waterseparability")) {
+							water2.add(colVal);
+						} else if(searchColVal[j].equals("pourpoint")) {
+							pour.add(colVal);
+						} else if(searchColVal[j].equals("flashpoint")) {
+							flash1.add(colVal);
+						} else if(searchColVal[j].equals("flashpoint2")) {
+							flash2.add(colVal);
+						} else if(searchColVal[j].equals("mgrde") || searchColVal[j].equals("mgrfs")) {
+							mg.add(colVal);
+						} else if(searchColVal[j].equals("carde") || searchColVal[j].equals("carfs")) {
+							ca.add(colVal);
+						} else if(searchColVal[j].equals("barde") || searchColVal[j].equals("barfs")) {
+							ba.add(colVal);
+						} else if(searchColVal[j].equals("prde") || searchColVal[j].equals("prfs")) {
+							ph.add(colVal);
+						} else if(searchColVal[j].equals("znrde") || searchColVal[j].equals("znrfs")) {
+							zn.add(colVal);
+						} else if(searchColVal[j].equals("antiwater") || searchColVal[j].equals("phenol") || searchColVal[j].equals("rust") || searchColVal[j].equals("dispersant")) {
+							//additive.add(colVal);
+							if(searchColVal[j].equals("antiwater")) {
+								additive1.add(colVal);
+							} else if(searchColVal[j].equals("phenol")) {
+								additive2.add(colVal);
+							} else if(searchColVal[j].equals("rust")) {
+								additive3.add(colVal);
+							} else {
+								additive4.add(colVal);
+							}
+						} else if(searchColVal[j].equals("ferde") || searchColVal[j].equals("ferfs")) {
+							fe.add(colVal);
+						} else if(searchColVal[j].equals("crrde") || searchColVal[j].equals("crrfs")) {
+							cr.add(colVal);
+						} else if(searchColVal[j].equals("pbrde") || searchColVal[j].equals("pbrfs")) {
+							pb.add(colVal);
+						} else if(searchColVal[j].equals("curde") || searchColVal[j].equals("curfs")) {
+							cu.add(colVal);
+						} else if(searchColVal[j].equals("snrde") || searchColVal[j].equals("snrfs")) {
+							sn.add(colVal);
+						} else if(searchColVal[j].equals("alrde") || searchColVal[j].equals("alrfs")) {
+							al.add(colVal);
+						} else if(searchColVal[j].equals("nirde") || searchColVal[j].equals("nirfs")) {
+							ni.add(colVal);
+						} else if(searchColVal[j].equals("agrde") || searchColVal[j].equals("agrfs")) {
+							ag.add(colVal);
+						} else if(searchColVal[j].equals("morde") || searchColVal[j].equals("morfs")) {
+							mo.add(colVal);
+						} else if(searchColVal[j].equals("tirde") || searchColVal[j].equals("tirfs")) {
+							ti.add(colVal);
+						} else if(searchColVal[j].equals("vrde") || searchColVal[j].equals("vrfs")) {
+							vana.add(colVal);
+						} else if(searchColVal[j].equals("pqindex")) {
+							pqList.add(colVal);
+						}
+						System.out.println("배열값111" + Arrays.toString(colVal));
+						resultMap.put(searchColVal[j], colVal);
+					}
+					resultMap.put("oilList", oilList);
+					resultMap.put("conList", conList);
+					resultMap.put("wearList", wearList);
+
+					String[] siliconArr = null;
+					String[] boronArr = null;
+					String[] sodiumArr = null;
+
+					String[] mgArr = null;
+					String[] caArr = null;
+					String[] baArr = null;
+					String[] phArr = null;
+					String[] znArr = null;
+
+					String[] feArr = null;
+					String[] crArr = null;
+					String[] pbArr = null;
+					String[] cuArr = null;
+					String[] snArr = null;
+					String[] alArr = null;
+					String[] niArr = null;
+					String[] agArr = null;
+					String[] moArr = null;
+					String[] tiArr = null;
+					String[] vanaArr = null;
+
+					// 리스트가 null이 아니거나 리스트 사이즈가 0보다 큰 경우에 리스트안의 배열을 재배치하는 method 호출
+					// 단 RDE, RFS 값을 가지고 있는 리스트만 해당
+					if(silicon != null && silicon.size() > 0) {siliconArr = commonUtil.concatArr(silicon);}
+					if(boron != null && boron.size() > 0) {boronArr = commonUtil.concatArr(boron);}
+					if(sodium != null && sodium.size() > 0) {sodiumArr = commonUtil.concatArr(sodium);}
+					if(mg != null && mg.size() > 0) {mgArr = commonUtil.concatArr(mg);}
+					if(ca != null && ca.size() > 0) {caArr = commonUtil.concatArr(ca);}
+					if(ba != null && ba.size() > 0) {baArr = commonUtil.concatArr(ba);}
+					if(ph != null && ph.size() > 0) {phArr = commonUtil.concatArr(ph);}
+					if(zn != null && zn.size() > 0) {znArr = commonUtil.concatArr(zn);}
+					if(fe != null && fe.size() > 0) {feArr = commonUtil.concatArr(fe);}
+					if(cr != null && cr.size() > 0) {crArr = commonUtil.concatArr(cr);}
+					if(pb != null && pb.size() > 0) {pbArr = commonUtil.concatArr(pb);}
+					if(cu != null && cu.size() > 0) {cuArr = commonUtil.concatArr(cu);}
+					if(sn != null && sn.size() > 0) {snArr = commonUtil.concatArr(sn);}
+					if(al != null && al.size() > 0) {alArr = commonUtil.concatArr(al);}
+					if(ni != null && ni.size() > 0) {niArr = commonUtil.concatArr(ni);}
+					if(ag != null && ag.size() > 0) {agArr = commonUtil.concatArr(ag);}
+					if(mo != null && mo.size() > 0) {moArr = commonUtil.concatArr(mo);}
+					if(ti != null && ti.size() > 0) {tiArr = commonUtil.concatArr(ti);}
+					if(vana != null && vana.size() > 0) {vanaArr = commonUtil.concatArr(vana);}
+
+					resultMap.put("siliconArr", siliconArr);
+					resultMap.put("boronArr", boronArr);
+					resultMap.put("sodiumArr", sodiumArr);
+
+					resultMap.put("mgArr", mgArr);
+					resultMap.put("caArr", caArr);
+					resultMap.put("baArr", baArr);
+					resultMap.put("phArr", phArr);
+					resultMap.put("znArr", znArr);
+
+					resultMap.put("feArr", feArr);
+					resultMap.put("crArr", crArr);
+					resultMap.put("pbArr", pbArr);
+					resultMap.put("cuArr", cuArr);
+					resultMap.put("snArr", snArr);
+					resultMap.put("alArr", alArr);
+					resultMap.put("niArr", niArr);
+					resultMap.put("agArr", agArr);
+					resultMap.put("moArr", moArr);
+					resultMap.put("tiArr", tiArr);
+					resultMap.put("vanaArr", vanaArr);
+
+					resultMap.put("pcountList1", pcountList1);
+					resultMap.put("pcountList2", pcountList2);
+					resultMap.put("pcountList3", pcountList3);
+					resultMap.put("pcountList4", pcountList4);
+					resultMap.put("pcountList5", pcountList5);
+					resultMap.put("pcountList6", pcountList6);
+					resultMap.put("cuttingList1", cuttingList1);
+					resultMap.put("cuttingList2", cuttingList2);
+					resultMap.put("cuttingList3", cuttingList3);
+					resultMap.put("cuttingList4", cuttingList4);
+					resultMap.put("fatigueList1", fatigueList1);
+					resultMap.put("fatigueList2", fatigueList2);
+					resultMap.put("fatigueList3", fatigueList3);
+					resultMap.put("fatigueList4", fatigueList4);
+					resultMap.put("severeList1", severeList1);
+					resultMap.put("severeList2", severeList2);
+					resultMap.put("severeList3", severeList3);
+					resultMap.put("severeList4", severeList4);
+					resultMap.put("nonmetalicList1", nonmetalicList1);
+					resultMap.put("nonmetalicList2", nonmetalicList2);
+					resultMap.put("nonmetalicList3", nonmetalicList3);
+					resultMap.put("nonmetalicList4", nonmetalicList4);
+					resultMap.put("numparticleList1", numparticleList1);
+					resultMap.put("numparticleList2", numparticleList2);
+					resultMap.put("numparticleList3", numparticleList3);
+					resultMap.put("numparticleList4", numparticleList4);
+					resultMap.put("numparticleList5", numparticleList5);
+					resultMap.put("water", water);
+					resultMap.put("chlorine", chlorine);
+					resultMap.put("mpc1", mpc1);
+					resultMap.put("mpc2", mpc2);
+					resultMap.put("mpc3", mpc3);
+					resultMap.put("patch", patch);
+					resultMap.put("silicon", silicon);
+					resultMap.put("boron", boron);
+					resultMap.put("sodium", sodium);
+					resultMap.put("abs1", abs1);
+					resultMap.put("abs2", abs2);
+					resultMap.put("abs3", abs3);
+					resultMap.put("abs4", abs4);
+					resultMap.put("abs5", abs5);
+					resultMap.put("abs6", abs6);
+					resultMap.put("abs7", abs7);
+					resultMap.put("abs8", abs8);
+
+					resultMap.put("viscosityList1", viscosityList1);
+					resultMap.put("viscosityList2", viscosityList2);
+					resultMap.put("viscosityList3", viscosityList3);
+					resultMap.put("acid", acid);
+					resultMap.put("specific", specific);
+					resultMap.put("ruler1", ruler1);
+					resultMap.put("ruler2", ruler2);
+					resultMap.put("ruler3", ruler3);
+					resultMap.put("rulernumber", rulernumber);
+					resultMap.put("foaming1", foaming1);
+					resultMap.put("foaming2", foaming2);
+					resultMap.put("foaming3", foaming3);
+					resultMap.put("water2", water2);
+					resultMap.put("pour", pour);
+					resultMap.put("flash1", flash1);
+					resultMap.put("flash2", flash2);
+					resultMap.put("mg", mg);
+					resultMap.put("ca", ca);
+					resultMap.put("ba", ba);
+					resultMap.put("ph", ph);
+					resultMap.put("zn", zn);
+					resultMap.put("additive1", additive1);
+					resultMap.put("additive2", additive2);
+					resultMap.put("additive3", additive3);
+					resultMap.put("additive4", additive4);
+
+					resultMap.put("fe", fe);
+					resultMap.put("cr", cr);
+					resultMap.put("pb", pb);
+					resultMap.put("cu", cu);
+					resultMap.put("sn", sn);
+					resultMap.put("al", al);
+					resultMap.put("ni", ni);
+					resultMap.put("ag", ag);
+					resultMap.put("mo", mo);
+					resultMap.put("ti", ti);
+					resultMap.put("vana", vana);
+					resultMap.put("pqList", pqList);
+
+					List<String> dateList = new ArrayList<String>();
+					List<String> iso1List = new ArrayList<String>();
+					List<String> iso2List = new ArrayList<String>();
+					List<String> nas1List = new ArrayList<String>();
+					List<String> nas2List = new ArrayList<String>();
+					List<String> sae1List = new ArrayList<String>();
+					List<String> sae2List = new ArrayList<String>();
+
+//					iso1List.add("ISO 4406");
+//					iso1List.add(pcon1);
+//					iso1List.add(pcon2);
+//					nas1List.add("NAS 1638");
+//					nas1List.add("");
+//					nas1List.add("");
+//					sae1List.add("SAE AS 4059");
+//					sae1List.add("");
+//					sae1List.add("");
+//
+//					iso2List.add("ISO 4406");
+//					iso2List.add(pcon1);
+//					iso2List.add(pcon2);
+//					nas2List.add("NAS 1638");
+//					nas2List.add("");
+//					nas2List.add("");
+//					sae2List.add("SAE AS 4059");
+//					sae2List.add("");
+//					sae2List.add("");
+
+					Object[] dateVal = null;
+					Object[] iso1Val = null;
+					Object[] iso2Val = null;
+					Object[] nas1Val = null;
+					Object[] nas2Val = null;
+					Object[] sae1Val = null;
+					Object[] sae2Val = null;
+					for(int nn=0; nn < analysisList.size(); nn++) {
+						dateList.add(analysisList.get(nn).get("regdate").toString().substring(0, 4) + "-" + analysisList.get(nn).get("regdate").toString().substring(4, 6) + "-" + analysisList.get(nn).get("regdate").toString().substring(6, 8));
+						iso1List.add((String)analysisList.get(nn).get("iso1"));
+						iso2List.add((String)analysisList.get(nn).get("iso2"));
+						nas1List.add((String)analysisList.get(nn).get("nas1"));
+						nas2List.add((String)analysisList.get(nn).get("nas2"));
+						sae1List.add((String)analysisList.get(nn).get("sae1"));
+						sae2List.add((String)analysisList.get(nn).get("sae2"));
+					}
+					System.out.println(analysisList.get(analysisList.size()-1).get("UWATER"));
+					// 이미지값 담기. 마지막 리스트에 담겨져 return 되어 오는 이미지를 엑셀에 표현하므로 마지막 리스트의 값 가져와 담기
+					resultMap.put("unonmetalicparticles", analysisList.get(analysisList.size()-1).get("UNONMETALICPARTICLES"));
+					resultMap.put("upatchext", analysisList.get(analysisList.size()-1).get("UPATCHEXT"));
+					resultMap.put("upatchtest", analysisList.get(analysisList.size()-1).get("UPATCHTEST"));
+					resultMap.put("ufiber", analysisList.get(analysisList.size()-1).get("UFIBER"));
+					resultMap.put("usevereslidingwear", analysisList.get(analysisList.size()-1).get("USEVERESLIDINGWEAR"));
+					resultMap.put("uparticleinfo5", analysisList.get(analysisList.size()-1).get("UPARTICLEINFO5"));
+					resultMap.put("uparticleinfo4", analysisList.get(analysisList.size()-1).get("UPARTICLEINFO4"));
+					resultMap.put("uparticleinfo3", analysisList.get(analysisList.size()-1).get("UPARTICLEINFO3"));
+					resultMap.put("uparticleinfo2", analysisList.get(analysisList.size()-1).get("UPARTICLEINFO2"));
+					resultMap.put("uparticleinfo1", analysisList.get(analysisList.size()-1).get("UPARTICLEINFO1"));
+					resultMap.put("umembranepatchimg5", analysisList.get(analysisList.size()-1).get("UMEMBRANEPATCHIMG5"));
+					resultMap.put("umembranepatchimg6", analysisList.get(analysisList.size()-1).get("UMEMBRANEPATCHIMG6"));
+					resultMap.put("umembranepatchimg3", analysisList.get(analysisList.size()-1).get("UMEMBRANEPATCHIMG3"));
+					resultMap.put("umembranepatchimg4", analysisList.get(analysisList.size()-1).get("UMEMBRANEPATCHIMG4"));
+					resultMap.put("umembranepatchimg2", analysisList.get(analysisList.size()-1).get("UMEMBRANEPATCHIMG2"));
+					resultMap.put("umembranepatchimg1", analysisList.get(analysisList.size()-1).get("UMEMBRANEPATCHIMG1"));
+					resultMap.put("ublotter", analysisList.get(analysisList.size()-1).get("UBLOTTER"));
+					resultMap.put("ucuttingwear", analysisList.get(analysisList.size()-1).get("UCUTTINGWEAR"));
+					resultMap.put("upatch", analysisList.get(analysisList.size()-1).get("UPATCH"));
+					resultMap.put("ufatiguewear", analysisList.get(analysisList.size()-1).get("UFATIGUEWEAR"));
+					resultMap.put("uruler2", analysisList.get(analysisList.size()-1).get("URULER2"));
+					resultMap.put("uruler1", analysisList.get(analysisList.size()-1).get("URULER1"));
+					resultMap.put("usludge", analysisList.get(analysisList.size()-1).get("USLUDGE"));
+					resultMap.put("uwater", analysisList.get(analysisList.size()-1).get("UWATER"));
+					resultMap.put("lastDate", dateList.get(dateList.size()-1));
+
+					dateVal = dateList.toArray(new Object[dateList.size()]);
+					iso1Val = iso1List.toArray(new Object[iso1List.size()]);
+					iso2Val = iso2List.toArray(new Object[iso2List.size()]);
+					nas1Val = nas1List.toArray(new Object[nas1List.size()]);
+					nas2Val = nas2List.toArray(new Object[nas2List.size()]);
+					sae1Val = sae1List.toArray(new Object[sae1List.size()]);
+					sae2Val = sae2List.toArray(new Object[sae2List.size()]);
+
+					// RDE, RFS 타이틀 생성
+					int dateValSize = dateVal.length;
+					List<String> titleList = new ArrayList<String>();
+					Object[] titleVal = null;
+					for(int z=0; z < dateValSize; z++) {
+						titleList.add("RDE");
+						titleList.add("RFS");
+					}
+					titleVal = titleList.toArray(new Object[titleList.size()]);
+					resultMap.put("titleVal", titleVal);
+
+					resultMap.put("regdate", Arrays.toString(dateVal));
+					resultMap.put("regdate2", dateVal);
+					resultMap.put("iso1", iso1Val);
+					resultMap.put("iso2", iso2Val);
+					resultMap.put("nas1", nas1Val);
+					resultMap.put("nas2", nas2Val);
+					resultMap.put("sae1", sae1Val);
+					resultMap.put("sae2", sae2Val);
+					System.out.println("날짜배열값" + Arrays.toString(dateVal));
+					System.out.println("iso배열값" + Arrays.toString(iso1Val));
+					System.out.println("nas배열값" + Arrays.toString(nas1Val));
+					System.out.println("sae배열값" + Arrays.toString(sae1Val));
+					System.out.println("날짜배열값" + dateVal);
+				}
+				resultMap.put("pcon1",pcon1);
+				resultMap.put("pcon2",pcon2);
+				resultMap.put("wcon1",wcon1);
+				resultMap.put("wcon2",wcon2);
+				resultMap.put("an1",an1);
+				resultMap.put("an2",an2);
+				resultMap.put("visco1",visco1);
+				resultMap.put("visco2",visco2);
+				resultMap.put("pq",pq);
+				resultMap.put("vis1",vis1);
+				resultMap.put("vis2",vis2);
+				resultMap.put("vis3",vis3);
+				resultMap.put("vis4",vis4);
+				resultMap.put("searchColVal", searchColVal);
+				resultMap.put("companyName", companyName);
+				resultMap.put("AUTHORIZER", manager);
+				resultMap.put("SAMPLENAME", sampleName);
+				resultMap.put("SAMPLEDATE", smplDate);
+				resultMap.put("OILTYPE", sampleName);
+				System.out.println("resultMap data : " + resultMap);
+				commonUtil.excelDownload(resultMap, "", excelName, res, req, reportLocation, path, excelgu);
+			}
+
+		} else {
+			System.out.println("로그인이 필요한 서비스입니다.");
+		}
+	}
+
+}

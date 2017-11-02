@@ -1,0 +1,97 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>    
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>회원 정보</title>
+<%
+    String idx = (String)request.getAttribute("idx");
+    Map<String, Object> memberInfo = (Map<String, Object>)request.getAttribute("memberInfo");
+%>
+<script type="text/javascript" src="/js/jquery-1.11.1.min.js"></script>
+<script type="text/javascript">
+	$(document).ready(function() {
+		$("#modify").click(function(e) {
+    		var modify;
+    		modify = confirm("수정하시겠습니까?");
+    		
+    		if(modify == true) {
+    			location.href="/member/memberWrite.info?idx=<%=idx%>";
+    		} else {
+    			alert("수정이 취소되었습니다.");
+    		} 
+    	});
+    	
+    	$("#delete").click(function(e) {
+    		var del;
+    		del = confirm("삭제하시겠습니까?");
+    		
+    		if(del == true) {
+    			location.href="/member/memberDelete.info?idx=<%=idx%>";
+    		} else {
+    			alert("삭제가 취소되었습니다.");
+    		}
+    	});
+    	
+    	$("#list").click(function(e) {
+    		location.href="/member/memberList.info";
+    	});
+	});
+</script>
+</head>
+<body>
+    <table width="100%" align="center">
+        <tr>
+            <td align="left"><h2 class="pageTitleH1">회원정보</h2></td>
+        </tr>
+        <tr>
+            <td height="30">&nbsp;</td>
+        </tr>
+    </table>
+    <table class="tableTypeC" width="100%" align="center">
+    <colgroup>
+        <col width="20%" />
+        <col width="*" />
+    </colgroup>
+        <tr>
+            <th class="th02">아이디</th>
+            <td height="25" style="font-size: 12px"><%=memberInfo.get("USERID")%></td>
+        </tr>
+        <tr>
+            <th class="th02">이름</th>
+            <td height="25" style="font-size: 12px"><%=memberInfo.get("USERNAME")%></td>
+        </tr>
+        <tr>
+            <th class="th02">메일주소</th>
+            <td height="25" style="font-size: 12px"><%=memberInfo.get("EMAIL")%></td>
+        </tr>
+        <tr>
+            <th class="th02">주소</th>
+            <td height="25" style="font-size: 12px"><%=memberInfo.get("ADDR")%></td>
+        </tr>
+        <tr>
+            <th class="th02">전화번호</th>
+            <td height="25" style="font-size: 12px"><%=memberInfo.get("TELNUM")%></td>
+        </tr>
+        <tr>
+            <th class="th02">등록일자</th>
+            <td height="25" style="font-size: 12px"><%=memberInfo.get("REGDATE")%></td>
+        </tr>
+    </table>
+    <table width="400" align="center">
+        <tr>
+            <td colspan="3" height="30"></td>
+        </tr>
+        <tr>
+<%--             <td align="center" height="22" style="font-size:12px"><a href="/member/memberWrite.info?idx=<%=idx%>" style="text-decoration: none;">수정</a></td> --%>
+<%--             <td align="center" height="22" style="font-size:12px"><a href="/member/memberDelete.info?idx=<%=idx%>" style="text-decoration: none;">삭제</a></td> --%>
+<!--             <td align="center" height="22" style="font-size:12px"><a href="/member/memberList.info" style="text-decoration: none;">돌아가기</a></td> -->
+			<td align="center" style="font-size: 12px"><input name="modify" class="btn_style4" id="modify" type="submit" value="정보수정"/></td>
+            <td align="center" style="font-size: 12px"><input name="delete" class="btn_style4" id="delete" type="submit" value="정보삭제"/></td>
+            <td align="center" style="font-size: 12px"><input name="list" class="btn_style4" id="list" type="submit" value="돌아가기"/></td>
+        </tr>
+    </table>
+</body>
+</html>

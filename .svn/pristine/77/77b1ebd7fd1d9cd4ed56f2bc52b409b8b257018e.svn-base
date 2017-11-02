@@ -1,0 +1,26 @@
+package com.eye2web.infosys.dao;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.orm.ibatis.support.SqlMapClientDaoSupport;
+
+public class InfoDao extends SqlMapClientDaoSupport {
+
+	public List<Map> getList() {
+		return getSqlMapClientTemplate().queryForList("Info.getList");
+	}
+
+	public Map<String, Object> getInfoDetail(int idx) {
+		return (Map<String, Object>)getSqlMapClientTemplate().queryForObject("Info.getInfoDetail", idx);
+	}
+
+	public void insertSolgeInfo(Map<String, Object> infoMap) {
+		getSqlMapClientTemplate().insert("Info.insertSolgeInfo", infoMap);
+	}
+
+	public void updateSolgeInfo(Map<String, Object> infoMap) {
+		getSqlMapClientTemplate().update("Info.updateSolgeInfo", infoMap);
+	}
+
+}

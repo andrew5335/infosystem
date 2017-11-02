@@ -1,0 +1,168 @@
+package com.eye2web.infosys.util;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.net.URLEncoder;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.jxls.transformer.XLSTransformer;
+
+import org.apache.poi.ss.usermodel.Workbook;
+import org.springframework.web.multipart.MultipartFile;
+
+public class CommonUtil {
+
+	/**
+	 *
+	 * @param msg
+	 * @param url
+	 * @return
+	 */
+	public Map<String, Object> rtMap(String msg, String url) {
+
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap.put("msg", msg);
+		resultMap.put("url", url);
+
+		return resultMap;
+	}
+
+	/**
+	 * @Description HttpServletRequest to Map
+	 * @param req
+	 * @return
+	 */
+	public Map<String, Object> convertReqToMap(HttpServletRequest req) {
+
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		String strKey = "";
+
+		for (Enumeration e = req.getParameterNames(); e.hasMoreElements();) {
+			strKey = (String)e.nextElement();
+			resultMap.put(strKey, req.getParameter(strKey));
+		}
+
+		return resultMap;
+	}
+
+	/**
+	 * @Description Save file and return save path
+	 * @param upfile
+	 * @param req
+	 * @return
+	 */
+	public String fileUpload(MultipartFile upfile, HttpServletRequest req) {
+
+		String result = "";
+		String filename = "";
+		String filepath = "";
+
+		if(upfile != null) {
+			filename = upfile.getOriginalFilename();
+			System.out.println("File Name : " + filename);
+
+			long today = System.currentTimeMillis();
+			DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+			String todayDate = df.format(today);
+
+			String path = req.getSession().getServletContext().getRealPath("/");
+			System.out.println("Path1 : " + path);
+
+			File dir = new File(path + "/upload/" + todayDate + "/");
+
+			if(!dir.exists()) {
+				dir.mkdir();
+			}
+
+			try {
+				File file = new File(path + "/upload/" + todayDate + "/" + filename);
+				upfile.transferTo(file);
+				filepath = "/upload/" + todayDate + "/" + filename;
+				result = filepath;
+				System.out.println("Save Path : " +  filepath);
+			} catch(Exception e) {
+				e.toString();
+				result = "/upload/noimg.jpg";
+			}
+
+		} else {
+			result = "/upload/noimg.jpg";
+		}
+
+		return result;
+	}
+
+	/**
+	 * @Description Excel File Download
+	 * @param excelMap
+	 * @param gu
+	 */
+	public void excelDownload(Map excelMap, String gu, String excelName, HttpServletResponse response, String reportLocation) throws Exception {
+
+		long today = System.currentTimeMillis();
+		DateFormat df = new SimpleDateFormat("yyMMdd");
+		DateFormat df2 = new SimpleDateFormat("yyyyMMddHHmmss");
+		String todayDate = df.format(today);
+		String fileDate = df2.format(today);
+
+		String templateFilePath = reportLocation + "/infoExcel.xlsx";    // excel template
+		String downFile = excelName.trim() + "_" + fileDate + ".xlsx";
+		System.out.println("다운로드할 엑셀파일명 : " + downFile);
+		System.out.println("template Location : " + templateFilePath);
+
+		String infoNo = String.format("%04d", excelMap.get("IDX"));
+		String reportNo = todayDate + "-" + infoNo;
+		excelMap.put("reportNo", reportNo);
+
+		File excelFile = new File(templateFilePath);
+		XLSTransformer transformer = new XLSTransformer();
+
+		Workbook wb = transformer.transformXLS(new FileInputStream(excelFile), excelMap);
+
+		response.setHeader( "Content-disposition", "attachment;filename=" + URLEncoder.encode(downFile,"UTF-8"));
+		response.setContentType("application/x-msexcel");
+
+		wb.write(response.getOutputStream());
+
+		response.getOutputStream().flush();
+		response.getOutputStream().close();
+	}
+
+	/**
+	 * @Description File Download
+	 * @param fileName
+	 * @param filePath
+	 * @param req
+	 * @param res
+	 * @throws Exception
+	 */
+	public void fileDownload(String fileName, String filePath, HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		String strFilenameOutput=new String(fileName.getBytes("euc-kr"),"8859_1");
+		String path = req.getSession().getServletContext().getRealPath("/");
+		File file=new File(path + filePath + "/" + fileName);
+
+		byte b[]=new byte[(int)file.length()];
+		res.setHeader("Content-Disposition","attachment;filename="+strFilenameOutput);
+		res.setHeader("Content-Length",String.valueOf(file.length()));
+		if(file.isFile()){
+			BufferedInputStream fin=new BufferedInputStream(new FileInputStream(file));
+			BufferedOutputStream outs=new BufferedOutputStream(res.getOutputStream());
+			int read=0;
+			while((read=fin.read(b))!=-1){outs.write(b,0,read);}
+			outs.close();
+			fin.close();
+		}
+
+	}
+
+}

@@ -1,0 +1,53 @@
+package com.eye2web.infosys.service;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.eye2web.infosys.dao.InfoDao;
+
+@Service
+public class InfoService {
+
+	@Autowired
+	private InfoDao infoDao;
+
+	public List<Map> getList() {
+		return infoDao.getList();
+	}
+
+	public Map<String, Object> getInfoDetail(int idx) {
+		return infoDao.getInfoDetail(idx);
+	}
+
+	public void insertSolgeInfo(Map<String, Object> infoMap) {
+		infoDao.insertSolgeInfo(infoMap);
+	}
+
+	public void updateSolgeInfo(Map<String, Object> infoMap) {
+		infoDao.updateSolgeInfo(infoMap);
+	}
+
+	public String getSmplPoint(int smplIdx) {
+		return infoDao.getSmplPoint(smplIdx);
+	}
+
+	public String getSmplDate(int smplIdx) {
+		return infoDao.getSmplDate(smplIdx);
+	}
+
+	public void deleteInfo(int idx) {
+		infoDao.deleteInfo(idx);
+	}
+
+	public List<Map> getAnalysisList(Map<String, Object> analysisMap) {
+		return infoDao.getAnalysisList(analysisMap);
+	}
+
+	public List<Map> getColumnName() {
+		return infoDao.getColumnName();
+	}
+
+}

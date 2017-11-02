@@ -1,0 +1,22 @@
+# =======================================================================
+#    Altibase Database Connection Properties in Apache Commons DBCP
+# =======================================================================
+#jdbc.altibase.driverClassName=Altibase.jdbc.driver.AltibaseDriver
+#jdbc.altibase.driverClassName=core.log.jdbc.driver.AltibaseDriver 
+#jdbc.altibase.url=jdbc:Altibase://210.112.245.120:20300/testdb
+#jdbc.altibase.username=adpusr
+#jdbc.altibase.password=adppwd
+#jdbc.altibase.maxActive=5
+#jdbc.altibase.maxIdle=3
+#jdbc.altibase.minIdle=1
+#jdbc.altibase.initialSize=2
+
+#jdbc.mysql.driver=com.mysql.jdbc.Driver
+#jdbc.mysql.url=jdbc:mysql://127.0.0.1:3306/solgeinfo
+#jdbc.mysql.username=root
+#jdbc.mysql.password=zhdtns77
+
+jdbc.mysql.driver=com.mysql.jdbc.Driver
+jdbc.mysql.url=jdbc:mysql://121.135.221.91:3306/solgeinfo
+jdbc.mysql.username=root
+jdbc.mysql.password=zhdtns77

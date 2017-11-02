@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org/DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!--  -->
+<sqlMap namespace="Member">
+
+    <select id="getList" resultClass="java.util.HashMap">
+        SELECT
+            IDX
+            , USERID
+            , USERNAME
+            , IFNULL(EMAIL, ' ') AS EMAIL
+            , IFNULL(ADDR, ' ') AS ADDR
+            , IFNULL(TELNUM, ' ') AS TELNUM
+            , REGDATE
+        FROM
+            USER
+    </select>
+    
+    <select id="getMemberInfo" resultClass="java.util.HashMap">
+        SELECT
+            IDX
+            , USERID
+            , USERNAME
+            , IFNULL(EMAIL, ' ') AS EMAIL
+            , IFNULL(ADDR, ' ') AS ADDR
+            , IFNULL(TELNUM, ' ') AS TELNUM
+            , REGDATE
+        FROM
+            USER
+        WHERE
+            IDX = #idx#
+    </select>
+    
+    <update id="updateUserInfo" parameterClass="java.util.HashMap">
+        UPDATE
+            USER
+        SET
+            PASSWD = password(#password#)
+            , USERNAME = #userName#
+            , EMAIL = #email#
+            , ADDR = #addr#
+            , TELNUM = #telNum#
+        WHERE
+            IDX = #idx#
+    </update>
+    
+    <delete id="deleteUserInfo" parameterClass="java.lang.Integer">
+        DELETE FROM
+            USER
+        WHERE
+            IDX = #idx#
+    </delete>
+
+</sqlMap>

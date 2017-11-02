@@ -1,0 +1,87 @@
+package com.eye2web.infosys.service;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.eye2web.infosys.dao.CustomerDao;
+
+@Service
+public class CustomerService {
+
+	@Autowired
+	private CustomerDao customerDao;
+
+	public List<Map<String, Object>> getList() {
+		return customerDao.getList();
+	}
+
+	public List<Map<String, Object>> getList2(Map<String, Object> customerMap) {
+		return customerDao.getList2(customerMap);
+	}
+
+	public void insertCustomerInfo(Map<String, Object> customerMap) {
+		customerDao.insertCustomerInfo(customerMap);
+	}
+
+	public Map<String, Object> getCustomerInfo(int idx) {
+		return customerDao.getCustomerInfo(idx);
+	}
+
+	public void updateCustomerInfo(Map<String, Object> customerMap) {
+		customerDao.updateCustomerInfo(customerMap);
+	}
+
+	public void deleteCustomerInfo(Map<String, Object> customerMap) {
+		customerDao.deleteCustomerInfo(customerMap);
+	}
+
+	public List<Map> getMachineList(int companyIdx) {
+		return customerDao.getMachineList(companyIdx);
+	}
+
+	public Map<String, Object> getMachineInfo(int idx) {
+		return customerDao.getMachineInfo(idx);
+	}
+
+	public void insertMachineInfo(Map<String, Object> machineMap) {
+		customerDao.insertMachineInfo(machineMap);
+	}
+
+	public void updateMachineInfo(Map<String, Object> machineMap) {
+		customerDao.updateMachineInfo(machineMap);
+	}
+
+	public void machineDelete(int idx) {
+		customerDao.machineDelete(idx);
+	}
+
+	public String getSampleNum() {
+		String sampleNum = "";
+
+		try {
+			customerDao.updateSampleNum();
+		} catch(Exception e) {
+			e.toString();
+		}
+
+		sampleNum = customerDao.getSampleNum();
+
+		return sampleNum;
+	}
+
+	public void insertSampleInfo(Map<String, Object> sampleMap) {
+		customerDao.insertSampleInfo(sampleMap);
+	}
+
+	public List<Map> getSampleList(int idx) {
+		return customerDao.getSampleList(idx);
+	}
+
+	public void deleteSampleInfo(int idx) {
+		customerDao.deleteSampleInfo(idx);
+	}
+
+}

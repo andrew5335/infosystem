@@ -1,0 +1,556 @@
+package com.eye2web.infosys.controller;
+
+import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
+import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.eye2web.infosys.bean.LoginBean;
+import com.eye2web.infosys.dto.InfoFileDto;
+import com.eye2web.infosys.service.CustomerService;
+import com.eye2web.infosys.service.InfoService;
+import com.eye2web.infosys.util.CommonUtil;
+
+/**
+ * @author HJKim
+ * @Description : 정보관리 화면 컨트롤러
+ *
+ */
+@Controller
+public class InfoController {
+
+	private static Logger logger = Logger.getLogger(InfoController.class);
+
+	@Autowired
+	private InfoService infoService;
+
+	@Autowired
+	private CustomerService customerService;
+
+	@Autowired
+    private ServletContext context;
+
+	private LoginBean loginBean;
+
+	private CommonUtil commonUtil;
+
+	//private InfoFileDto infoFileDto;
+
+	private String userId;
+
+	/**
+	 * @Description 정보관리 메인화면
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/info/infoMain.info")
+	public ModelAndView infoMain(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+			List<Map> infoList = infoService.getList();
+			List<Map> customerList = customerService.getList();
+
+			mav.addObject("infoList", infoList);
+			mav.addObject("customerList", customerList);
+		    mav.setViewName("/info/infoMain");
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 정보 리스트
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/info/infoList.info")
+	public ModelAndView infoList(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+			List<Map> infoList = infoService.getList();
+
+			mav.addObject("infoList", infoList);
+			mav.setViewName("/info/infoList");
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 정보 입력 화면
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/info/infoWrite.info")
+	public ModelAndView infoWrite(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		// 로그인한 사용자인 경우
+		if(userId != null && userId != "") {
+			String idx = "";
+			int tmpidx = 0;
+			Map<String, Object> infoMap = null;
+			idx = req.getParameter("idx");
+
+			List<Map> customerList = customerService.getList();
+
+			// 정보 idx 값이 있을 경우 수정, 없으면 입력
+			if(idx == null || idx == "" || idx.length() < 0) {
+
+				// idx값이 없을 경우 빈 입력 페이지 표시
+				mav.addObject("infoMap", infoMap);
+				mav.addObject("idx", "");
+				mav.addObject("type", "write");
+				mav.addObject("customerList", customerList);
+				mav.setViewName("/info/infoWrite");
+			} else {
+				// idx 값이 있을 경우 관련 정보를 DB에서 가져와 페이지의 각 필드에 노출
+				tmpidx = Integer.parseInt(idx);
+				infoMap = infoService.getInfoDetail(tmpidx);
+
+				if(infoMap.size() > 0) {
+					mav.addObject("idx", idx);
+					mav.addObject("infoMap", infoMap);
+					mav.addObject("type", "update");
+					mav.addObject("customerList", customerList);
+					mav.setViewName("/info/infoWrite");
+				} else {
+					Map<String, Object> errorMap = new HashMap<String, Object>();
+					errorMap.put("msg", "정보가 없습니다..");
+					errorMap.put("url", "/infoMap/infoList.info");
+					mav.addObject("errorMap", errorMap);
+					mav.setViewName("/common/error");
+				}
+			}
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 기계 리스트
+	 * @param req
+	 * @param res
+	 * @throws Exception
+	 */
+	@RequestMapping("/ajax/machineList.info")
+	public void machineList(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		String companyIdx = "";
+		companyIdx = req.getParameter("companyIdx").toString();
+
+		if(companyIdx != null && companyIdx != "") {
+			int cpIdx = Integer.parseInt(companyIdx);
+			List<Map> mcList = customerService.getMachineList(cpIdx);
+
+			JSONObject jsonObj = new JSONObject();
+			jsonObj.put("result", mcList);
+			System.out.println(jsonObj);
+			res.setContentType("text/html;charset=utf-8");
+			PrintWriter out=res.getWriter();
+            out.print(jsonObj.toString());
+		}
+	}
+
+	/**
+	 * @Description 샘플 리스트
+	 * @param req
+	 * @param res
+	 * @throws Exception
+	 */
+	@RequestMapping("/ajax/smplList.info")
+	public void smplList(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		String specIdx = "";
+		specIdx = req.getParameter("specIdx").toString();
+
+		if(specIdx != null && specIdx != "") {
+			int smplIdx = Integer.parseInt(specIdx);
+			List<Map> smList = customerService.getSampleList(smplIdx);
+
+			JSONObject jsonObj = new JSONObject();
+			jsonObj.put("result", smList);
+			System.out.println(jsonObj);
+			res.setContentType("text/html;charset=utf-8");
+			PrintWriter out=res.getWriter();
+            out.print(jsonObj.toString());
+		}
+	}
+
+	/**
+	 * @Description 샘플포인트 정보
+	 * @param req
+	 * @param res
+	 * @throws Exception
+	 */
+	@RequestMapping("/ajax/smplPoint.info")
+	public void smplPoint(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		String sampleIdx = "";
+		sampleIdx = req.getParameter("sampleIdx").toString();
+
+		if(sampleIdx != null && sampleIdx != "") {
+			int smplIdx = Integer.parseInt(sampleIdx);
+			String rstSmplPoint = infoService.getSmplPoint(smplIdx);
+
+			JSONObject jsonObj = new JSONObject();
+			jsonObj.put("result", rstSmplPoint);
+			System.out.println(jsonObj);
+			res.setContentType("text/html;charset=utf-8");
+			PrintWriter out=res.getWriter();
+            out.print(jsonObj.toString());
+		}
+	}
+
+	/**
+	 * @Description 정보입력 처리
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/info/infoWriteProcess.info")
+	public ModelAndView infoWriteProcess(HttpServletRequest req, HttpServletResponse res, InfoFileDto infoFileDto) throws Exception {
+
+		userId = loginBean.getUserId();
+		System.out.println("로그인한 사용자 : " + userId);
+
+		String idx = req.getParameter("idx");
+		String type = req.getParameter("type");
+		String companyIdx = req.getParameter("companyIdx");
+		String specIdx = req.getParameter("specIdx");
+		String sampleIdx = req.getParameter("sampleIdx");
+		String smplPoint = req.getParameter("smplpoint");
+		String oilType = req.getParameter("oilType");
+		String authorizer = req.getParameter("authorizer");
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+			commonUtil = new CommonUtil();
+			Map<String, Object> infoMap = commonUtil.convertReqToMap(req);
+
+			long today = System.currentTimeMillis();
+			DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+			String todayDate = df.format(today);
+			System.out.println("오늘 날짜 : " + todayDate);
+
+			String path = req.getSession().getServletContext().getRealPath("/");
+			System.out.println("Path : " + path);
+
+			MultipartFile upFile1 = infoFileDto.getUpFile1();
+			MultipartFile ucuttingWear          = infoFileDto.getUcuttingWear();
+			MultipartFile ufatigueWear          = infoFileDto.getUfatigueWear();
+			MultipartFile unonmetalicparticles  = infoFileDto.getUnonmetalicparticles();
+			MultipartFile usevereSlidingWear    = infoFileDto.getUsevereSlidingWear();
+			MultipartFile uwater                = infoFileDto.getUwater();
+			MultipartFile ufiber                = infoFileDto.getUfiber();
+			MultipartFile uParticleInfo1        = infoFileDto.getuParticleInfo1();
+			MultipartFile uParticleInfo2        = infoFileDto.getuParticleInfo2();
+			MultipartFile uParticleInfo3        = infoFileDto.getuParticleInfo3();
+			MultipartFile uParticleInfo4        = infoFileDto.getuParticleInfo4();
+			MultipartFile uParticleInfo5        = infoFileDto.getuParticleInfo5();
+			MultipartFile uMembranePatchImg1    = infoFileDto.getuMembranePatchImg1();
+			MultipartFile uMembranePatchImg2    = infoFileDto.getuMembranePatchImg2();
+			MultipartFile uMembranePatchImg3    = infoFileDto.getuMembranePatchImg3();
+			MultipartFile uMembranePatchImg4    = infoFileDto.getuMembranePatchImg4();
+			MultipartFile uMembranePatchImg5    = infoFileDto.getuMembranePatchImg5();
+			MultipartFile uMembranePatchImg6    = infoFileDto.getuMembranePatchImg6();
+			MultipartFile uPatch                = infoFileDto.getuPatch();
+			MultipartFile uPatchExt             = infoFileDto.getuPatchExt();
+			MultipartFile uPatchTest            = infoFileDto.getuPatchTest();
+			MultipartFile uSludge               = infoFileDto.getuSludge();
+			MultipartFile uBlotter              = infoFileDto.getuBlotter();
+			MultipartFile uRuler1               = infoFileDto.getuRuler1();
+			MultipartFile uRuler2               = infoFileDto.getuRuler2();
+
+			String fileName1 = commonUtil.fileUpload(upFile1, req);
+			String ucuttingWearName					= commonUtil.fileUpload(ucuttingWear, req);
+			String uFatigueWearName         = commonUtil.fileUpload(ufatigueWear, req);
+			String unonmetalicparticlesName  = commonUtil.fileUpload(unonmetalicparticles, req);
+			String usevereSlidingWearName   = commonUtil.fileUpload(usevereSlidingWear, req);
+			String uwaterName               = commonUtil.fileUpload(uwater, req);
+			String ufiberName               = commonUtil.fileUpload(ufiber, req);
+			String uParticleInfo1Name       = commonUtil.fileUpload(uParticleInfo1, req);
+			String uParticleInfo2Name       = commonUtil.fileUpload(uParticleInfo2, req);
+			String uParticleInfo3Name       = commonUtil.fileUpload(uParticleInfo3, req);
+			String uParticleInfo4Name       = commonUtil.fileUpload(uParticleInfo4, req);
+			String uParticleInfo5Name       = commonUtil.fileUpload(uParticleInfo5, req);
+			String uMembranePatchImg1Name   = commonUtil.fileUpload(uMembranePatchImg1, req);
+			String uMembranePatchImg2Name   = commonUtil.fileUpload(uMembranePatchImg2, req);
+			String uMembranePatchImg3Name   = commonUtil.fileUpload(uMembranePatchImg3, req);
+			String uMembranePatchImg4Name   = commonUtil.fileUpload(uMembranePatchImg4, req);
+			String uMembranePatchImg5Name   = commonUtil.fileUpload(uMembranePatchImg5, req);
+			String uMembranePatchImg6Name   = commonUtil.fileUpload(uMembranePatchImg6, req);
+			String uPatchName               = commonUtil.fileUpload(uPatch, req);
+			String uPatchExtName            = commonUtil.fileUpload(uPatchExt, req);
+			String uPatchTestName           = commonUtil.fileUpload(uPatchTest, req);
+			String uSludgeName              = commonUtil.fileUpload(uSludge, req);
+			String uBlotterName             = commonUtil.fileUpload(uBlotter, req);
+			String uRuler1Name              = commonUtil.fileUpload(uRuler1, req);
+			String uRuler2Name              = commonUtil.fileUpload(uRuler2, req);
+
+			infoMap.put("ucuttingWear", ucuttingWearName);
+			infoMap.put("ufatigueWear", uFatigueWearName);
+			infoMap.put("unonmetalicparticles", unonmetalicparticlesName);
+			infoMap.put("usevereSlidingWear", usevereSlidingWearName);
+			infoMap.put("uwater", uwaterName);
+			infoMap.put("ufiber", ufiberName);
+			infoMap.put("uParticleInfo1", uParticleInfo1Name);
+			infoMap.put("uParticleInfo2", uParticleInfo2Name);
+			infoMap.put("uParticleInfo3", uParticleInfo3Name);
+			infoMap.put("uParticleInfo4", uParticleInfo4Name);
+			infoMap.put("uParticleInfo5", uParticleInfo5Name);
+			infoMap.put("uMembranePatchImg1", uMembranePatchImg1Name);
+			infoMap.put("uMembranePatchImg2", uMembranePatchImg2Name);
+			infoMap.put("uMembranePatchImg3", uMembranePatchImg3Name);
+			infoMap.put("uMembranePatchImg4", uMembranePatchImg4Name);
+			infoMap.put("uMembranePatchImg5", uMembranePatchImg5Name);
+			infoMap.put("uMembranePatchImg6", uMembranePatchImg6Name);
+			infoMap.put("uPatch", uPatchName);
+			infoMap.put("uPatchExt", uPatchExtName);
+			infoMap.put("uPatchTest", uPatchTestName);
+			infoMap.put("uSludge", uSludgeName);
+			infoMap.put("uBlotter", uBlotterName);
+			infoMap.put("uRuler1", uRuler1Name);
+			infoMap.put("uRuler2", uRuler2Name);
+
+			if(idx != null || idx != "" || idx.length() > 0) {
+				infoMap.put("idx", idx);
+			}
+
+			infoMap.put("companyIdx", companyIdx);
+			infoMap.put("specIdx", specIdx);
+			infoMap.put("sampleIdx", sampleIdx);
+			infoMap.put("smplPoint", smplPoint);
+			infoMap.put("oilType", oilType);
+			infoMap.put("authorizer", authorizer);
+			infoMap.put("regDate", todayDate);
+			infoMap.put("register", userId);
+
+			try {
+				Map<String, Object> successMap = new HashMap<String, Object>();
+
+				Iterator<String> iterator = infoMap.keySet().iterator();
+			    while (iterator.hasNext()) {
+			        String key = iterator.next();
+			        System.out.print("key="+key);
+			        System.out.println(" value="+infoMap.get(key));
+			    }
+
+				if(type == "write" || type.equals("write")) {
+					infoService.insertSolgeInfo(infoMap);
+					successMap.put("msg", "정보입력에 성공하였습니다.");
+				} else {
+					infoService.updateSolgeInfo(infoMap);
+					successMap.put("msg", "정보수정에 성공하였습니다.");
+				}
+
+				successMap.put("url", "/info/infoList.info");
+			    mav.addObject("successMap", successMap);
+			    mav.setViewName("/common/success");
+			} catch(Exception e) {
+				e.toString();
+			}
+
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 정보 보기 화면
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/info/infoView.info")
+	public ModelAndView infoView(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+			String idx = "";
+			int tmpidx = 0;
+			Map<String, Object> infoMap = null;
+			idx = req.getParameter("idx");
+
+			if(idx == null || idx == "" || idx.length() < 0) {
+				Map<String, Object> errorMap = new HashMap<String, Object>();
+				errorMap.put("msg", "정보가 없습니다..");
+				errorMap.put("url", "/infoMap/infoList.info");
+				mav.addObject("errorMap", errorMap);
+				mav.setViewName("/common/error");
+			} else {
+				// idx 값이 있을 경우 관련 정보를 DB에서 가져와 페이지의 각 필드에 노출
+				tmpidx = Integer.parseInt(idx);
+				infoMap = infoService.getInfoDetail(tmpidx);
+
+				if(infoMap.size() > 0) {
+					mav.addObject("idx", idx);
+					mav.addObject("infoMap", infoMap);
+					mav.addObject("type", "update");
+					mav.setViewName("/info/infoView");
+				} else {
+					Map<String, Object> errorMap = new HashMap<String, Object>();
+					errorMap.put("msg", "정보가 없습니다..");
+					errorMap.put("url", "/infoMap/infoList.info");
+					mav.addObject("errorMap", errorMap);
+					mav.setViewName("/common/error");
+				}
+			}
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	/**
+	 * @Description 엑셀 다운로드
+	 * @param req
+	 * @param res
+	 * @throws Exception
+	 */
+	@RequestMapping("/info/infoExcelDownload.info")
+	public void infoExcelDownload(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		System.out.println("로그인한 사용자 : " + userId);
+		String reportLocation = context.getRealPath("WEB-INF");
+		System.out.println("report location : " + reportLocation);
+
+		if(userId != null && userId != "") {
+			String idx = "";
+			int tmpidx = 0;
+			Map<String, Object> excelMap = null;
+			idx = req.getParameter("idx");
+
+			if(idx == null || idx == "" || idx.length() < 0) {
+
+			} else {
+				commonUtil = new CommonUtil();
+				tmpidx = Integer.parseInt(idx);
+				excelMap = infoService.getInfoDetail(tmpidx);
+				System.out.println("name : " + excelMap.get("COMPANYNAME"));
+				String excelName = "Solge_Report_" + excelMap.get("COMPANYNAME");
+				System.out.println("엑셀파일명 : " +  excelName);
+				commonUtil.excelDownload(excelMap, "", excelName, res, reportLocation);
+			}
+		} else {
+			System.out.println("로그인이 필요한 서비스입니다.");
+		}
+	}
+
+	@RequestMapping("/info/infoDelete.info")
+	public ModelAndView deleteInfo(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+
+		if(userId != null && userId != "") {
+			String idx = "";
+			int tmpidx = 0;
+			Map<String, Object> infoMap = null;
+			idx = req.getParameter("idx");
+
+			if(idx == null || idx == "" || idx.length() < 0) {
+				ModelAndView mav = new ModelAndView();
+				Map<String, Object> errorMap = new HashMap<String, Object>();
+				errorMap.put("msg", "삭제에 실패하였습니다..");
+				errorMap.put("url", "/info/infoList.info");
+				mav.addObject("errorMap", errorMap);
+				mav.setViewName("/common/error");
+				return mav;
+			} else {
+				tmpidx = Integer.parseInt(idx);
+				infoService.deleteInfo(tmpidx);
+			}
+		} else {
+			ModelAndView mav = new ModelAndView();
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+			return mav;
+		}
+
+		return new ModelAndView("redirect:/info/infoList.info");
+	}
+
+	@RequestMapping("/info/infoAnalysis.info")
+	public ModelAndView infoAnalysis(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		ModelAndView mav = new ModelAndView();
+
+		return mav;
+	}
+
+}

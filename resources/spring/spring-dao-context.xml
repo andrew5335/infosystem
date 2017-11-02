@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+				http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+	
+	<bean id="sampleDao" class="com.eye2web.infosys.dao.SampleDao">
+		<property name="sqlMapClient" ref="sqlMapClient"/>
+	</bean>
+	
+	<bean id="loginDao" class="com.eye2web.infosys.dao.LoginDao">
+	    <property name="sqlMapClient" ref="sqlMapClient"/>
+	</bean>
+	
+	<bean id="infoDao" class="com.eye2web.infosys.dao.InfoDao">
+	    <property name="sqlMapClient" ref="sqlMapClient"/>
+	</bean>
+	
+	<bean id="customerDao" class="com.eye2web.infosys.dao.CustomerDao">
+	    <property name="sqlMapClient" ref="sqlMapClient"/>
+	</bean>
+	
+	<bean id="boardDao" class="com.eye2web.infosys.dao.BoardDao">
+	    <property name="sqlMapClient" ref="sqlMapClient"/>
+	</bean>
+	
+	<bean id="memberDao" class="com.eye2web.infosys.dao.MemberDao">
+	    <property name="sqlMapClient" ref="sqlMapClient"/>
+	</bean>
+	
+	<bean id="deviceDao" class="com.eye2web.infosys.dao.DeviceDao">
+	    <property name="sqlMapClient" ref="sqlMapClient"/>
+	</bean>
+	
+	<bean id="managerDao" class="com.eye2web.infosys.dao.ManagerDao">
+	    <property name="sqlMapClient" ref="sqlMapClient"/>
+	</bean>
+	
+	<bean id="examDao" class="com.eye2web.infosys.dao.ExamDao">
+	    <property name="sqlMapClient" ref="sqlMapClient"/>
+	</bean>
+	
+</beans>

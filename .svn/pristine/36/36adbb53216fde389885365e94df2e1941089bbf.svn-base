@@ -1,0 +1,23 @@
+package com.eye2web.infosys.util;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class CommonUtil {
+	
+	/**
+	 * 
+	 * @param msg
+	 * @param url
+	 * @return
+	 */
+	public Map<String, Object> rtMap(String msg, String url) {
+		
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap.put("msg", msg);
+		resultMap.put("url", url);
+		
+		return resultMap;
+	}
+
+}

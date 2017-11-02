@@ -1,0 +1,39 @@
+<%@ page language="java" contentType="text/html; charset=EUC-KR"
+    pageEncoding="EUC-KR"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-KR">
+<title>Insert title here</title>
+</head>
+<body>
+    <table width="100%" align="center">
+        <tr>
+            <td align="right"><a href="/login/logout.info" style="text-decoration: none; font-size: 12px">로그아웃</a></td>
+        </tr>
+    </table>
+    <table width="400" align="center">
+        <tr>
+            <td align="center">Solge System Main</td>
+        </tr>
+    </table>
+    <table width="400" align="center">
+        <tr>
+            <td style="text-decoration: none; font-size: 12px">1. 정보입력 확인</td>
+            <td><a href="/info/infoList.info" style="text-decoration: none; font-size: 12px">바로가기</a></td>
+        </tr>
+        <tr>
+            <td style="text-decoration: none; font-size: 12px">2. 업체관리 확인</td>
+            <td><a href="/customer/customerList.info" style="text-decoration: none; font-size: 12px">바로가기</a></td>
+        </tr>
+        <tr>
+            <td style="text-decoration: none; font-size: 12px">3. 회원정보 확인</td>
+            <td><a href="/member/memberList.info" style="text-decoration: none; font-size: 12px">바로가기</a></td>
+        </tr>
+        <tr>
+            <td style="text-decoration: none; font-size: 12px">4. 게시판 확인</td>
+            <td><a href="/sample/list.info" style="text-decoration: none; font-size: 12px">바로가기</a></td>
+        </tr>
+    </table>
+</body>
+</html>

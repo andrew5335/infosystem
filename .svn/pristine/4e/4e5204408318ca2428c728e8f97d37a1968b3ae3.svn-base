@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org/DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!--  -->
+<sqlMap namespace="Login">
+    <!-- 로그인 시 회원 유무 확인 -->
+    <select id="getUserCnt" parameterClass="java.util.HashMap" resultClass="java.lang.Integer">
+        SELECT 
+            COUNT(*) 
+        FROM
+            USER
+        WHERE
+            USERID = #userId#
+        AND
+            PASSWD = password(#password#)
+    </select>
+    
+    <!-- 회원정보 확인 -->
+    <select id="getUserInfo" resultClass="java.util.HashMap">
+        SELECT
+            USERID
+            , USERNAME
+            , EMAIL
+            , ADDR
+            , TELNUM
+        FROM
+            USER
+        WHERE
+            USERID = #userid#
+    </select>
+    
+    <!-- 회원가입 -->
+    <insert id="insertUserInfo" parameterClass="java.util.HashMap">
+        INSERT INTO
+            USER
+            (
+                USERID
+                , PASSWD
+                , USERNAME
+                , EMAIL
+                , ADDR
+                , TELNUM
+                , REGDATE
+            )
+            VALUES
+            (
+                #userId#
+                , password(#password#)
+                , #userName#
+                , #email#
+                , #addr#
+                , #telNum#
+                , date_format(now(), '%Y%m%d%H%i%s')
+            )
+    </insert>
+</sqlMap>

@@ -1,0 +1,266 @@
+package com.eye2web.infosys.controller;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.eye2web.infosys.bean.LoginBean;
+import com.eye2web.infosys.dto.InfoFileDto;
+import com.eye2web.infosys.service.CustomerService;
+import com.eye2web.infosys.service.DeviceService;
+import com.eye2web.infosys.util.CommonUtil;
+
+/**
+ * @author HJKim
+ * @Description : 장비 결과파일 컨트롤러
+ *
+ */
+@Controller
+public class DeviceInfoController {
+
+	private static Logger logger = Logger.getLogger(DeviceInfoController.class);
+
+	@Autowired
+    private ServletContext context;
+
+	@Autowired
+	private CustomerService customerService;
+
+	@Autowired
+	private DeviceService deviceService;
+
+	private LoginBean loginBean;
+
+	private CommonUtil commonUtil;
+
+	private HttpSession session;
+
+	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+	private String userId;
+
+	@RequestMapping("/device/deviceResultUpload.info")
+	public ModelAndView deviceResultUpload(HttpServletRequest req, HttpServletResponse res) throws Exception {
+
+		userId = loginBean.getUserId();
+		//userId = (String)session.getAttribute("userId");
+		System.out.println("로그인한 사용자 : " + userId);
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+
+			List<Map<String, Object>> customerList = customerService.getList();
+			mav.addObject("customerList", customerList);
+			mav.setViewName("/device/deviceResultUpload");
+
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+	@RequestMapping("/device/deviceResultUploadProcess.info")
+	public ModelAndView deviceResultUploadProcess(HttpServletRequest req, HttpServletResponse res, InfoFileDto infoFileDto) throws Exception {
+
+		userId = loginBean.getUserId();
+		//userId = (String)session.getAttribute("userId");
+		System.out.println("로그인한 사용자 : " + userId);
+
+		String companyIdx = req.getParameter("companyIdx");
+		String specIdx = req.getParameter("specIdx");
+		String sampleIdx = req.getParameter("sampleIdx");
+		String smplPoint = req.getParameter("smplpoint");
+		String oilType = req.getParameter("oilType");
+		String authorizer = req.getParameter("authorizer");
+		String filetype = "";
+
+		ModelAndView mav = new ModelAndView();
+
+		if(userId != null && userId != "") {
+			commonUtil = new CommonUtil();
+
+			long today = System.currentTimeMillis();
+			DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+			String todayDate = df.format(today);
+			System.out.println("오늘 날짜 : " + todayDate);
+
+			String path = req.getSession().getServletContext().getRealPath("/");
+			System.out.println("Path : " + path);
+
+			MultipartFile result1 = infoFileDto.getResult1();
+			MultipartFile result2 = infoFileDto.getResult2();
+			MultipartFile result3 = infoFileDto.getResult3();
+
+			Map<String, Object> isoMap = new HashMap<String, Object>();
+			Map<String, Object> nasMap = new HashMap<String, Object>();
+			Map<String, Object> saeMap = new HashMap<String, Object>();
+			Map<String, Object> deviceMap = new HashMap<String, Object>();
+			deviceMap.put("companyIdx", companyIdx);
+			deviceMap.put("specIdx", specIdx);
+			deviceMap.put("sampleIdx", sampleIdx);
+			deviceMap.put("smplPoint", smplPoint);
+			deviceMap.put("oilType", oilType);
+			deviceMap.put("authorizer", authorizer);
+			deviceMap.put("regdate", todayDate);
+
+			if(result1.getSize() > 0) {
+				String resultName1 = commonUtil.fileUpload2(result1, req, "ISO");
+				if(!resultName1.equals("fail")) {
+					System.out.println("ISO파일처리진행");
+					try {
+						System.out.println("ISO파일위치 : " + resultName1);
+						isoMap = commonUtil.fileRead(req, resultName1);
+						System.out.println("isoMap : " + isoMap.toString());
+						deviceMap.put("p4um", isoMap.get("[PER_ML_LIMIT_1]"));
+						deviceMap.put("p6um", isoMap.get("[PER_ML_LIMIT_2]"));
+						deviceMap.put("p14um", isoMap.get("[PER_ML_LIMIT_3]"));
+						deviceMap.put("iso1", isoMap.get("[ISO_4406_CODE]"));
+						deviceService.insertISOResult(deviceMap);
+						filetype += "-ISO ";
+					} catch(Exception e) {
+						System.out.println("ISO파일처리에러");
+						Map<String, Object> errorMap = new HashMap<String, Object>();
+						errorMap.put("msg", "ISO관련파일에 문제가 있습니다.");
+						errorMap.put("url", "/device/deviceResultUpload.info");
+						mav.addObject("errorMap", errorMap);
+						mav.setViewName("/common/error");
+						return mav;
+					}
+				} else {
+					System.out.println("ISO파일처리에러");
+					Map<String, Object> errorMap = new HashMap<String, Object>();
+					errorMap.put("msg", "ISO관련파일에 문제가 있습니다.");
+					errorMap.put("url", "/device/deviceResultUpload.info");
+					mav.addObject("errorMap", errorMap);
+					mav.setViewName("/common/error");
+					return mav;
+				}
+			}
+
+			if(result2.getSize() > 0) {
+				String resultName2 = commonUtil.fileUpload2(result2, req, "NAS");
+				if(!resultName2.equals("fail")) {
+					System.out.println("NAS파일처리진행");
+					try {
+						System.out.println("NAS파일위치 : " + resultName2);
+						nasMap = commonUtil.fileRead(req, resultName2);
+						System.out.println("nasMap : " + nasMap.toString());
+						deviceMap.put("five", nasMap.get("[PER_ML_LIMIT_1]"));
+						deviceMap.put("fifteen", nasMap.get("[PER_ML_LIMIT_2]"));
+						deviceMap.put("twentyfive", nasMap.get("[PER_ML_LIMIT_3]"));
+						deviceMap.put("fifty", nasMap.get("[PER_ML_LIMIT_4]"));
+						deviceMap.put("hundred", nasMap.get("[PER_ML_LIMIT_5]"));
+						//String nasvalue = nasMap.get("[NAS_1638_CODE]").toString().replace("[NOTES]", "");
+						deviceMap.put("nas", nasMap.get("[NAS_1638_CODE]").toString().replace("[NOTES]", ""));
+						deviceService.insertNASResult(deviceMap);
+						filetype += "-NAS ";
+					} catch(Exception e) {
+						System.out.println("NAS파일처리에러");
+						Map<String, Object> errorMap = new HashMap<String, Object>();
+						errorMap.put("msg", "NAS관련파일에 문제가 있습니다.");
+						errorMap.put("url", "/device/deviceResultUpload.info");
+						mav.addObject("errorMap", errorMap);
+						mav.setViewName("/common/error");
+						return mav;
+					}
+				} else {
+					System.out.println("NAS파일처리에러");
+					Map<String, Object> errorMap = new HashMap<String, Object>();
+					errorMap.put("msg", "NAS관련파일에 문제가 있습니다.");
+					errorMap.put("url", "/device/deviceResultUpload.info");
+					mav.addObject("errorMap", errorMap);
+					mav.setViewName("/common/error");
+					return mav;
+				}
+			}
+
+			if(result3.getSize() > 0) {
+				String resultName3 = commonUtil.fileUpload2(result3, req, "SAE");
+				if(!resultName3.equals("fail")) {
+					System.out.println("SAE AS파일처리진행");
+					try {
+						System.out.println("SAE AS파일위치 : " + resultName3);
+						saeMap = commonUtil.fileRead(req, resultName3);
+						System.out.println("saeMap : " + saeMap.toString());
+						deviceMap.put("p4um", saeMap.get("[PER_ML_LIMIT_1]"));
+						deviceMap.put("p6um", saeMap.get("[PER_ML_LIMIT_2]"));
+						deviceMap.put("p14um", saeMap.get("[PER_ML_LIMIT_3]"));
+						deviceMap.put("p21um", saeMap.get("[PER_ML_LIMIT_4]"));
+						deviceMap.put("p38um", saeMap.get("[PER_ML_LIMIT_5]"));
+						deviceMap.put("p70um", saeMap.get("[PER_ML_LIMIT_6]"));
+						String saevalue = saeMap.get("[SAE_AS4059_CPC_CODE]").toString().replace(">", "");
+						saevalue = saevalue.replace("[NOTES]", "");
+						String[] saeEval = saevalue.split("/");
+						List saeList = new ArrayList();
+						for(int i=0; i < saeEval.length; i++) {
+							saeList.add(Integer.parseInt(saeEval[i]));
+						}
+						Object[] saeIntArr = saeList.toArray(new Object[saeList.size()]);
+						Arrays.sort(saeIntArr);
+						String saeval = String.valueOf(saeIntArr[saeIntArr.length-1]);
+						saeval = ">" + saeval;
+						deviceMap.put("sae", saeval);
+						deviceService.insertSAEResult(deviceMap);
+						filetype += "-SAE AS ";
+					} catch(Exception e) {
+						System.out.println("SAE AS파일처리에러");
+						Map<String, Object> errorMap = new HashMap<String, Object>();
+						errorMap.put("msg", "SAE AS관련파일에 문제가 있습니다.");
+						errorMap.put("url", "/device/deviceResultUpload.info");
+						mav.addObject("errorMap", errorMap);
+						mav.setViewName("/common/error");
+						return mav;
+					}
+				} else {
+					System.out.println("SAE AS파일처리에러");
+					Map<String, Object> errorMap = new HashMap<String, Object>();
+					errorMap.put("msg", "SAE AS관련파일에 문제가 있습니다.");
+					errorMap.put("url", "/device/deviceResultUpload.info");
+					mav.addObject("errorMap", errorMap);
+					mav.setViewName("/common/error");
+					return mav;
+				}
+			}
+
+//			deviceService.insertDeviceResult(deviceMap);
+
+			Map<String, Object> successMap = new HashMap<String, Object>();
+			successMap.put("msg", filetype + "파일 처리에 성공하였습니다.");
+			successMap.put("url", "/device/deviceResultUpload.info");
+		    mav.addObject("successMap", successMap);
+		    mav.setViewName("/common/success");
+
+		} else {
+			Map<String, Object> errorMap = new HashMap<String, Object>();
+			errorMap.put("msg", "로그인이 필요한 서비스입니다.");
+			errorMap.put("url", "/login/login.info");
+			mav.addObject("errorMap", errorMap);
+			mav.setViewName("/common/error");
+		}
+
+		return mav;
+	}
+
+}

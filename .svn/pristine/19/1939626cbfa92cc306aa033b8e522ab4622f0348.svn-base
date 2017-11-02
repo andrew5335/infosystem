@@ -1,0 +1,18 @@
+<%@	page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="decorator" uri="http://www.opensymphony.com/sitemesh/decorator" %>
+<div class="left_zone">
+	<div><img src="/images/left_title_admin.gif"/></div>
+	<div class="left_zone_menu">
+		<ul>
+			<li class="left_1depth"><a href="/info/infoMain.info"><b>정보관리시스템</b></a>
+				<ul>
+					<li><a href="/info/infoList.info">시험정보관리</a></li>
+					<li><a href="/customer/customerList.info">업체관리</a></li>
+					<li><a href="/member/memberList.info">회원관리</a></li>
+					<li><a href="/info/infoAnalysis.info">정보분석</a></li>
+					<li><a href="/sample/list.info">게시판</a></li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+</div>

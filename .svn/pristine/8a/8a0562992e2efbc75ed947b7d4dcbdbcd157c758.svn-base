@@ -1,0 +1,57 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>    
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>회원 정보</title>
+</head>
+<body>
+<%
+    String idx = (String)request.getAttribute("idx");
+    Map<String, Object> memberInfo = (Map<String, Object>)request.getAttribute("memberInfo");
+%>
+    <table width="400" align="center">
+        <tr>
+            <td align="center"  style="text-decoration: none; font-size: 14px">회원 정보</td>
+        </tr>
+    </table>
+    <table width="400" align="center">
+        <tr>
+            <td height="25" style="text-decoration: none; font-size: 12px" bgcolor="#cccccc">아이디</td>
+            <td height="25" style="font-size: 12px"><%=memberInfo.get("USERID")%></td>
+        </tr>
+        <tr>
+            <td height="25" style="text-decoration: none; font-size: 12px" bgcolor="#cccccc">이름</td>
+            <td height="25" style="font-size: 12px"><%=memberInfo.get("USERNAME")%></td>
+        </tr>
+        <tr>
+            <td height="25" style="text-decoration: none; font-size: 12px" bgcolor="#cccccc">메일주소</td>
+            <td height="25" style="font-size: 12px"><%=memberInfo.get("EMAIL")%></td>
+        </tr>
+        <tr>
+            <td height="25" style="text-decoration: none; font-size: 12px" bgcolor="#cccccc">주소</td>
+            <td height="25" style="font-size: 12px"><%=memberInfo.get("ADDR")%></td>
+        </tr>
+        <tr>
+            <td height="25" style="text-decoration: none; font-size: 12px" bgcolor="#cccccc">전화번호</td>
+            <td height="25" style="font-size: 12px"><%=memberInfo.get("TELNUM")%></td>
+        </tr>
+        <tr>
+            <td height="25" style="text-decoration: none; font-size: 12px" bgcolor="#cccccc">등록일자</td>
+            <td height="25" style="font-size: 12px"><%=memberInfo.get("REGDATE")%></td>
+        </tr>
+    </table>
+    <table width="400" align="center">
+        <tr>
+            <td colspan="3" height="30"></td>
+        </tr>
+        <tr>
+            <td align="center" height="22" style="font-size:12px"><a href="/member/memberWrite.info?idx=<%=idx%>" style="text-decoration: none;">수정</a></td>
+            <td align="center" height="22" style="font-size:12px"><a href="/member/memberDelete.info?idx=<%=idx%>" style="text-decoration: none;">삭제</a></td>
+            <td align="center" height="22" style="font-size:12px"><a href="/member/memberList.info" style="text-decoration: none;">돌아가기</a></td>
+        </tr>
+    </table>
+</body>
+</html>

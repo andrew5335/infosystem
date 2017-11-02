@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<decorators defaultdir="/WEB-INF/jsp/common/decorators">
+    <excludes>
+        <pattern>/exclude/*</pattern>
+        <pattern>/js/*</pattern>
+        <pattern>/images/*</pattern>
+        <pattern>/styles/*</pattern>
+        <pattern>/css/*</pattern>
+<!--         <pattern>/api/*</pattern> -->
+        <pattern>/ajax/*</pattern>
+<!--         <pattern>/excel/*</pattern> -->
+<!--         <pattern>/auth/*</pattern> -->
+        <pattern>/login/*</pattern>
+        <pattern>/common/*</pattern>
+        <pattern>/error/*</pattern>
+<!--         <pattern>/cp/*/excel</pattern> -->
+<!--         <pattern>/scp/*/excel</pattern> -->
+<!--         <pattern>/admin/*/excel</pattern> -->
+    </excludes>
+    
+    <decorator name="info-lnb" page="info-lnb.jsp"/>
+    <decorator name="gnb" page="gnb.jsp"/>
+    <decorator name="footer" page="footer.jsp"/>
+
+    <decorator name="board" page="info-layout.jsp">
+        <pattern>/board/*</pattern>
+    </decorator>
+    
+    <decorator name="customer" page="info-layout.jsp">
+        <pattern>/customer/*</pattern>
+    </decorator>
+    
+    <decorator name="info" page="info-layout.jsp">
+        <pattern>/info/*</pattern>
+    </decorator>
+    
+    <decorator name="member" page="info-layout.jsp">
+        <pattern>/member/*</pattern>
+    </decorator>
+    
+    <decorator name="sample" page="info-layout.jsp">
+        <pattern>/sample/*</pattern>
+    </decorator>
+    
+    <decorator name="device" page="info-layout.jsp">
+        <pattern>/device/*</pattern>
+    </decorator>
+
+</decorators>
